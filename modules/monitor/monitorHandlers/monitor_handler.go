@@ -3,6 +3,7 @@ package monitorHandlers
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/guatom999/Ecommerce-Go/config"
+	"github.com/guatom999/Ecommerce-Go/modules/entities"
 	"github.com/guatom999/Ecommerce-Go/modules/monitor"
 )
 
@@ -27,5 +28,13 @@ func (m *monitorHandler) HealthCheck(c *fiber.Ctx) error {
 		Version: m.cfg.App().Version(),
 	}
 
-	return c.Status(fiber.StatusOK).JSON(res)
+	// _ = res
+
+	// boss := "test"
+
+	// fmt.Println(boss)
+
+	// return c.Status(fiber.StatusOK).JSON(res)
+
+	return entities.NewResponse(c).Success(fiber.StatusOK, res).Res()
 }

@@ -1,6 +1,10 @@
 package entities
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"fmt"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 type IResponse interface {
 	Success(code int, data any) IResponse
@@ -28,6 +32,8 @@ func NewResponse(c *fiber.Ctx) IResponse {
 }
 
 func (r *Response) Success(code int, data any) IResponse {
+	r.StatusCode = code
+	r.Data = data
 	return r
 }
 func (r *Response) Error(code int, tractId, msg string) IResponse {
@@ -44,8 +50,10 @@ func (r *Response) Res() error {
 
 	return r.Context.Status(r.StatusCode).JSON(func() any {
 		if r.IsError {
+			fmt.Println("Response Error")
 			return &r.ErrorRes
 		}
+		fmt.Println("Case Not Error")
 		return &r.Data
 	}())
 
