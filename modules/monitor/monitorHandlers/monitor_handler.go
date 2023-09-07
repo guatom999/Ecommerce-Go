@@ -28,13 +28,5 @@ func (m *monitorHandler) HealthCheck(c *fiber.Ctx) error {
 		Version: m.cfg.App().Version(),
 	}
 
-	// _ = res
-
-	// boss := "test"
-
-	// fmt.Println(boss)
-
-	// return c.Status(fiber.StatusOK).JSON(res)
-
 	return entities.NewResponse(c).Success(fiber.StatusOK, res).Res()
 }
