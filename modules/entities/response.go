@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/guatom999/Ecommerce-Go/pkg/logger"
 )
 
 type IResponse interface {
@@ -34,6 +35,10 @@ func NewResponse(c *fiber.Ctx) IResponse {
 func (r *Response) Success(code int, data any) IResponse {
 	r.StatusCode = code
 	r.Data = data
+
+	//Best Practice to parse parameter with &reference
+	logger.InitLogger(r.Context, &r.Data).Print().Save()
+
 	return r
 }
 func (r *Response) Error(code int, tractId, msg string) IResponse {
@@ -44,6 +49,9 @@ func (r *Response) Error(code int, tractId, msg string) IResponse {
 		Msg:     msg,
 	}
 	r.IsError = true
+
+	logger.InitLogger(r.Context, &r.ErrorRes).Print().Save()
+
 	return r
 }
 func (r *Response) Res() error {
