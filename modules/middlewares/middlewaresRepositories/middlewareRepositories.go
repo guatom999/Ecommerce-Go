@@ -1,4 +1,4 @@
-package middlewaresrepositories
+package middlewaresRepositories
 
 import "github.com/jmoiron/sqlx"
 
