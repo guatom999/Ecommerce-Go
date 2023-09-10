@@ -9,6 +9,6 @@ type middlewaresUsecase struct {
 	middlewareRepository middlewaresRepositories.IMiddlewareRepository
 }
 
-func MiddlewaresUsecase(r middlewaresRepositories.IMiddlewareRepository) IMiddlewaresUsecase {
-	return &middlewaresUsecase{r}
+func MiddlewaresUsecase(middlewareRepository middlewaresRepositories.IMiddlewareRepository) IMiddlewaresUsecase {
+	return &middlewaresUsecase{middlewareRepository}
 }

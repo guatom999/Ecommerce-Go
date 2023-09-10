@@ -2,6 +2,9 @@ package servers
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresHandlers"
+	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresRepositories"
+	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresUsecases"
 	"github.com/guatom999/Ecommerce-Go/modules/monitor/monitorHandlers"
 )
 
@@ -12,14 +15,24 @@ type IModuleFactory interface {
 type moduleFactory struct {
 	router fiber.Router
 	server *server
+	mid    middlewaresHandlers.IMiddlewareHandler
 }
 
 // Constructor
-func NewModule(router fiber.Router, server *server) IModuleFactory {
+func NewModule(router fiber.Router, server *server, mid middlewaresHandlers.IMiddlewareHandler) IModuleFactory {
 	return &moduleFactory{
 		router: router,
 		server: server,
+		mid:    mid,
 	}
+}
+
+func InitMiddlewares(s *server) middlewaresHandlers.IMiddlewareHandler {
+	repository := middlewaresRepositories.MiddlewareRepository(s.db)
+	usecase := middlewaresUsecases.MiddlewaresUsecase(repository)
+	handler := middlewaresHandlers.MiddlewareHandler(s.cfg, usecase)
+
+	return handler
 }
 
 func (m *moduleFactory) MonitorModule() {
