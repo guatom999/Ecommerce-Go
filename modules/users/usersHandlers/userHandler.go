@@ -63,5 +63,5 @@ func (h *usersHandler) SignUpCustomer(c *fiber.Ctx) error {
 		).Res()
 	}
 
-	return entities.NewResponse(c).Success(fiber.StatusOK, result).Res()
+	return entities.NewResponse(c).Success(fiber.StatusCreated, result).Res()
 }
