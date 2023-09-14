@@ -14,7 +14,7 @@ type userRepository struct {
 	db *sqlx.DB
 }
 
-func UserRepository(db *sqlx.DB) IUserRepository {
+func UsersRepository(db *sqlx.DB) IUserRepository {
 	return &userRepository{db}
 }
 

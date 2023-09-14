@@ -15,7 +15,7 @@ type userUsecase struct {
 	userRepository usersRepositories.IUserRepository
 }
 
-func UserUsecase(cfg config.IConfig, userRepository usersRepositories.IUserRepository) IUserUsecase {
+func UsersUsecase(cfg config.IConfig, userRepository usersRepositories.IUserRepository) IUserUsecase {
 	return &userUsecase{
 		cfg,
 		userRepository,
