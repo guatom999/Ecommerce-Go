@@ -32,7 +32,7 @@ func (obj *UserRegisterReq) BcryptHashing() error {
 	return nil
 }
 
-func (obj *UserRegisterReq) Isbool() bool {
+func (obj *UserRegisterReq) IsEmail() bool {
 
 	match, err := regexp.MatchString(`^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$`, obj.Email)
 
