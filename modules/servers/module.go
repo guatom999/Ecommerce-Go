@@ -6,6 +6,9 @@ import (
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresRepositories"
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresUsecases"
 	"github.com/guatom999/Ecommerce-Go/modules/monitor/monitorHandlers"
+	"github.com/guatom999/Ecommerce-Go/modules/users/usersHandlers"
+	"github.com/guatom999/Ecommerce-Go/modules/users/usersRepositories"
+	"github.com/guatom999/Ecommerce-Go/modules/users/usersUsecases"
 )
 
 type IModuleFactory interface {
@@ -39,4 +42,15 @@ func (m *moduleFactory) MonitorModule() {
 	handler := monitorHandlers.MonitorHandler(m.server.cfg)
 
 	m.router.Get("/", handler.HealthCheck)
+}
+
+func (m *moduleFactory) UsersModule() {
+	repository := usersRepositories.UsersRepository(m.server.db)
+	usecase := usersUsecases.UsersUsecase(m.server.cfg, repository)
+	handler := usersHandlers.UsersHandler(m.server.cfg, usecase)
+
+	router := m.router.Group("/users")
+
+	router.Post("/signup", handler.SignUpCustomer)
+
 }
