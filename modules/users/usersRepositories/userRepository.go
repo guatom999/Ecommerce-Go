@@ -1,6 +1,8 @@
 package usersRepositories
 
 import (
+	"fmt"
+
 	"github.com/guatom999/Ecommerce-Go/modules/users"
 	"github.com/guatom999/Ecommerce-Go/modules/users/usersPattern"
 	"github.com/jmoiron/sqlx"
@@ -8,6 +10,7 @@ import (
 
 type IUserRepository interface {
 	InsertUser(req *users.UserRegisterReq, isAdmin bool) (*users.UserPassport, error)
+	FindOneUserByEmail(email string) (*users.UserCredentialCheck, error)
 }
 
 type userRepository struct {
@@ -42,6 +45,27 @@ func (r *userRepository) InsertUser(req *users.UserRegisterReq, isAdmin bool) (*
 
 	if err != nil {
 		return nil, err
+	}
+
+	return user, nil
+}
+
+func (r *userRepository) FindOneUserByEmail(email string) (*users.UserCredentialCheck, error) {
+	query := `
+		SELECT 
+			"id" , 
+			"email" , 
+			"password" , 
+			"username" ,
+			"role_id" 
+		FROM "users" 
+		WHERE "email" = $1;
+	`
+
+	user := new(users.UserCredentialCheck)
+
+	if err := r.db.Get(user, query, email); err != nil {
+		return nil, fmt.Errorf("user not found")
 	}
 
 	return user, nil

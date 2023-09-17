@@ -12,6 +12,7 @@ require (
 	github.com/Valgard/go-pcre v0.0.0-20200510215507-235e400e25e9 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/gofiber/fiber/v2 v2.49.1 // indirect
+	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
 	github.com/google/uuid v1.3.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
