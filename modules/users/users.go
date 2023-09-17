@@ -71,3 +71,7 @@ type UserClaims struct {
 	Id     string `db:"id" json:"id"`
 	RoleId int    `db:"role" json:"role"`
 }
+
+type UserRefreshCredential struct {
+	RefreshToken string `json:"refresh_token" forn:"refresh_token"`
+}
