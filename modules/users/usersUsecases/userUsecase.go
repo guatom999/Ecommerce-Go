@@ -6,6 +6,7 @@ import (
 	"github.com/guatom999/Ecommerce-Go/config"
 	"github.com/guatom999/Ecommerce-Go/modules/users"
 	"github.com/guatom999/Ecommerce-Go/modules/users/usersRepositories"
+	"github.com/guatom999/Ecommerce-Go/pkg/authen"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -51,6 +52,23 @@ func (u *userUsecase) GetPassport(req *users.UserCredential) (*users.UserPasspor
 		return nil, fmt.Errorf("password incorrect")
 	}
 
+	accessToken, err := authen.NewAuth(authen.Access, u.cfg.Jwt(), &users.UserClaims{
+		Id:     user.Id,
+		RoleId: user.RoleId,
+	})
+
+	refreshToken, err := authen.NewAuth(authen.Refresh, u.cfg.Jwt(), &users.UserClaims{
+		Id:     user.Id,
+		RoleId: user.RoleId,
+	})
+
+	// passport := users.UserPassport{
+	// 	User: &users.User{
+
+	// 	},
+
+	// }
+
 	passport := &users.UserPassport{
 		User: &users.User{
 			Id:       user.Id,
@@ -58,7 +76,14 @@ func (u *userUsecase) GetPassport(req *users.UserCredential) (*users.UserPasspor
 			Username: user.Username,
 			RoleId:   user.RoleId,
 		},
-		Token: nil,
+		Token: &users.UserToken{
+			AccessToken:  accessToken.SignToken(),
+			RefreshToken: refreshToken.SignToken(),
+		},
+	}
+
+	if err := u.userRepository.InsertOauth(passport); err != nil {
+		return nil, fmt.Errorf("insert oauth failed : %v", err)
 	}
 
 	return passport, nil

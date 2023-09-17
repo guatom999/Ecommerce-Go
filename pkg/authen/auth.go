@@ -1,6 +1,7 @@
 package authen
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -38,6 +39,35 @@ func (a *auth) SignToken() string {
 	signString, _ := token.SignedString(a.cfg.SecretKey())
 
 	return signString
+}
+
+func ParseToken(cfg config.IJwtConfig, tokenString string) (*authMapClaims, error) {
+
+	token, err := jwt.ParseWithClaims(tokenString, &authMapClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("sign method not match algorithm")
+		}
+
+		return cfg.SecretKey(), nil
+
+	})
+
+	if err != nil {
+		if errors.Is(err, jwt.ErrTokenMalformed) {
+			return nil, fmt.Errorf("token format is invalid")
+		} else if errors.Is(err, jwt.ErrTokenExpired) {
+			return nil, fmt.Errorf("token is expired")
+		} else {
+			return nil, fmt.Errorf("parse token failed %v", err)
+		}
+	}
+
+	if claims, ok := token.Claims.(*authMapClaims); ok {
+		return claims, nil
+	} else {
+		return nil, fmt.Errorf("claims type is not authMapClaims")
+	}
+
 }
 
 func jwtTimeDurationCal(t int) *jwt.NumericDate {
