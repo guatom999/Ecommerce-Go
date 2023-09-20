@@ -14,6 +14,9 @@ type IUserRepository interface {
 	InsertUser(req *users.UserRegisterReq, isAdmin bool) (*users.UserPassport, error)
 	FindOneUserByEmail(email string) (*users.UserCredentialCheck, error)
 	InsertOauth(req *users.UserPassport) error
+	FindOneOauth(refreshToken string) (*users.Oauth, error)
+	UpdateOauth(req *users.UserToken) error
+	GetProfile(userId string) (*users.User, error)
 }
 
 type userRepository struct {
@@ -100,4 +103,56 @@ func (r *userRepository) InsertOauth(req *users.UserPassport) error {
 	}
 
 	return nil
+}
+
+func (r *userRepository) FindOneOauth(refreshToken string) (*users.Oauth, error) {
+
+	query := `SELECT "id" , "user_id" FROM "oauth" WHERE "refresh_token" = $1;`
+
+	oauth := new(users.Oauth)
+
+	if err := r.db.Get(oauth, query, refreshToken); err != nil {
+		return nil, fmt.Errorf("oauth not found")
+	}
+
+	return oauth, nil
+}
+
+func (r *userRepository) UpdateOauth(req *users.UserToken) error {
+
+	query := `
+		UPDATE "oauth" 
+		SET 
+			"access_token" = :acess_token , 
+			"refresh_token" = :refresh_token
+		WHERE 
+			"id" = :id;
+			`
+
+	if _, err := r.db.NamedExecContext(context.Background(), query, req); err != nil {
+		return fmt.Errorf("update oauth failed: %v", err)
+	}
+
+	return nil
+}
+
+func (r *userRepository) GetProfile(userId string) (*users.User, error) {
+	query := `
+	SELECT 
+		"id",
+		"email",
+		"username",
+		"role_id"
+	FROM
+		"oauth"
+	WHERE "id" = $1;
+	`
+
+	profile := new(users.User)
+
+	if err := r.db.Get(profile, query, userId); err != nil {
+		return nil, fmt.Errorf("get user profile from oauth failed %v", err)
+	}
+
+	return profile, nil
 }

@@ -78,6 +78,25 @@ func jwtTimeRepeatAdapter(t int64) *jwt.NumericDate {
 	return jwt.NewNumericDate(time.Unix(t, 0))
 }
 
+func RepeatToken(cfg config.IJwtConfig, claims *users.UserClaims, exp int64) string {
+	obj := &auth{
+		mapClaims: &authMapClaims{
+			Claims: claims,
+			RegisteredClaims: jwt.RegisteredClaims{
+				Issuer:    "Ecommerce-api",
+				Subject:   "refresh-token",
+				Audience:  []string{"customer", "admin"},
+				ExpiresAt: jwtTimeRepeatAdapter(exp),
+				NotBefore: jwt.NewNumericDate(time.Now()),
+				IssuedAt:  jwt.NewNumericDate(time.Now()),
+			},
+		},
+		cfg: cfg,
+	}
+
+	return obj.SignToken()
+}
+
 func NewAuth(tokenType tokenType, cfg config.IJwtConfig, claims *users.UserClaims) (IAuth, error) {
 	switch tokenType {
 	case Access:

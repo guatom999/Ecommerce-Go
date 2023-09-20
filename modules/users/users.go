@@ -64,12 +64,17 @@ type UserPassport struct {
 type UserToken struct {
 	Id           string `db:"id" json:"id"`
 	AccessToken  string `db:"access_token" json:"access_token"`
-	RefreshToken string `db:"refresh_token" json:"refresh"`
+	RefreshToken string `db:"refresh_token" json:"refresh_token"`
 }
 
 type UserClaims struct {
 	Id     string `db:"id" json:"id"`
 	RoleId int    `db:"role" json:"role"`
+}
+
+type Oauth struct {
+	Id     string `db:"id" json:"id"`
+	UserId string `db:"user_id" json:"user_id"`
 }
 
 type UserRefreshCredential struct {
