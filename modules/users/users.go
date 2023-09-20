@@ -69,7 +69,7 @@ type UserToken struct {
 
 type UserClaims struct {
 	Id     string `db:"id" json:"id"`
-	RoleId int    `db:"role" json:"role"`
+	RoleId int    `db:"role_i" json:"role"`
 }
 
 type Oauth struct {
@@ -78,5 +78,9 @@ type Oauth struct {
 }
 
 type UserRefreshCredential struct {
-	RefreshToken string `json:"refresh_token" forn:"refresh_token"`
+	RefreshToken string `json:"refresh_token" form:"refresh_token"`
+}
+
+type UserRemoveCredential struct {
+	OauthId string `db:"id" json:"oauth_id" form:"oauth_id"`
 }

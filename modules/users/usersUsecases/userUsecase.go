@@ -14,6 +14,7 @@ type IUserUsecase interface {
 	InsertCustomer(req *users.UserRegisterReq) (*users.UserPassport, error)
 	GetPassport(req *users.UserCredential) (*users.UserPassport, error)
 	RefreshPassport(req *users.UserRefreshCredential) (*users.UserPassport, error)
+	DeleteOauth(oauthId string) error
 }
 
 type userUsecase struct {
@@ -104,7 +105,7 @@ func (u *userUsecase) RefreshPassport(req *users.UserRefreshCredential) (*users.
 		return nil, err
 	}
 
-	profile, err := u.userRepository.GetProfile(req.RefreshToken)
+	profile, err := u.userRepository.GetProfile(oauth.UserId)
 
 	if err != nil {
 		return nil, fmt.Errorf("get user profile failed : %v", err)
@@ -146,4 +147,12 @@ func (u *userUsecase) RefreshPassport(req *users.UserRefreshCredential) (*users.
 
 	return passport, nil
 
+}
+
+func (u *userUsecase) DeleteOauth(oauthId string) error {
+	if err := u.userRepository.DeleteOauth(oauthId); err != nil {
+		return err
+	}
+
+	return nil
 }

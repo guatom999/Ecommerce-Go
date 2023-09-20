@@ -17,6 +17,7 @@ type IUserRepository interface {
 	FindOneOauth(refreshToken string) (*users.Oauth, error)
 	UpdateOauth(req *users.UserToken) error
 	GetProfile(userId string) (*users.User, error)
+	DeleteOauth(userId string) error
 }
 
 type userRepository struct {
@@ -123,7 +124,7 @@ func (r *userRepository) UpdateOauth(req *users.UserToken) error {
 	query := `
 		UPDATE "oauth" 
 		SET 
-			"access_token" = :acess_token , 
+			"access_token" = :access_token , 
 			"refresh_token" = :refresh_token
 		WHERE 
 			"id" = :id;
@@ -137,22 +138,33 @@ func (r *userRepository) UpdateOauth(req *users.UserToken) error {
 }
 
 func (r *userRepository) GetProfile(userId string) (*users.User, error) {
+
+	fmt.Printf("userId is %v:", userId)
 	query := `
-	SELECT 
+	SELECT
 		"id",
 		"email",
 		"username",
 		"role_id"
-	FROM
-		"oauth"
-	WHERE "id" = $1;
-	`
+	FROM "users"
+	WHERE "id" = $1;`
 
 	profile := new(users.User)
-
 	if err := r.db.Get(profile, query, userId); err != nil {
-		return nil, fmt.Errorf("get user profile from oauth failed %v", err)
+		return nil, fmt.Errorf("get user failed: %v", err)
+	}
+	return profile, nil
+}
+
+func (r *userRepository) DeleteOauth(userId string) error {
+	query := ` 
+		DELETE FROM "oauth" WHERE "id" = $1
+	`
+
+	if _, err := r.db.ExecContext(context.Background(), query, userId); err != nil {
+		return fmt.Errorf("oauth not found")
 	}
 
-	return profile, nil
+	return nil
+
 }
