@@ -91,7 +91,7 @@ func (f *userReq) Admin() (IInsertUser, error) {
 	)
 	VALUES
 	(
-		$1,$2,$3,1
+		$1,$2,$3,2
 	)
 	RETURNING "id";
 	`
