@@ -8,15 +8,18 @@ import (
 	"github.com/guatom999/Ecommerce-Go/modules/entities"
 	"github.com/guatom999/Ecommerce-Go/modules/users"
 	"github.com/guatom999/Ecommerce-Go/modules/users/usersUsecases"
+	"github.com/guatom999/Ecommerce-Go/pkg/authen"
 )
 
 type userHandlersErrCode string
 
 const (
-	signUpCustomerErr  userHandlersErrCode = "users-001"
-	signInCustomerErr  userHandlersErrCode = "users-002"
-	refreshPassportErr userHandlersErrCode = "users-003"
-	signOutErr         userHandlersErrCode = "users-004"
+	signUpCustomerErr     userHandlersErrCode = "users-001"
+	signInCustomerErr     userHandlersErrCode = "users-002"
+	refreshPassportErr    userHandlersErrCode = "users-003"
+	signOutErr            userHandlersErrCode = "users-004"
+	signUpAdminErr        userHandlersErrCode = "users-005"
+	generateAdminTokenErr userHandlersErrCode = "users-006"
 )
 
 type IUsersHandler interface {
@@ -24,6 +27,8 @@ type IUsersHandler interface {
 	SignIn(c *fiber.Ctx) error
 	RefeshPassport(c *fiber.Ctx) error
 	SignOut(c *fiber.Ctx) error
+	SignUpAdmin(c *fiber.Ctx) error
+	GenerateAdminToken(c *fiber.Ctx) error
 }
 
 type usersHandler struct {
@@ -70,6 +75,43 @@ func (h *usersHandler) SignUpCustomer(c *fiber.Ctx) error {
 	}
 
 	return entities.NewResponse(c).Success(fiber.StatusCreated, result).Res()
+}
+
+func (h *usersHandler) SignUpAdmin(c *fiber.Ctx) error {
+
+	req := new(users.UserRegisterReq)
+
+	if err := c.BodyParser(req); err != nil {
+		return entities.NewResponse(c).Error(
+			fiber.ErrBadRequest.Code,
+			string(signUpCustomerErr),
+			err.Error(),
+		).Res()
+	}
+
+	// validation email
+
+	if !req.IsEmail() {
+		return entities.NewResponse(c).Error(
+			fiber.ErrBadRequest.Code,
+			string(signUpCustomerErr),
+			"email pattern doesn't match",
+		).Res()
+	}
+
+	result, err := h.userUsecase.InsertCustomer(req)
+
+	if err != nil {
+		return entities.NewResponse(c).Error(
+			fiber.ErrBadRequest.Code,
+			string(signUpCustomerErr),
+			fmt.Sprintf("some data in used :%v", err),
+		).Res()
+	}
+
+	return entities.NewResponse(c).Success(fiber.StatusCreated, result).Res()
+
+	return nil
 }
 
 func (h *usersHandler) SignIn(c *fiber.Ctx) error {
@@ -144,5 +186,27 @@ func (h *usersHandler) SignOut(c *fiber.Ctx) error {
 	return entities.NewResponse(c).Success(
 		fiber.StatusOK,
 		nil,
+	).Res()
+}
+
+func (h *usersHandler) GenerateAdminToken(c *fiber.Ctx) error {
+
+	admintoKen, err := authen.NewAuth(authen.Admin, h.cfg.Jwt(), nil)
+
+	if err != nil {
+		return entities.NewResponse(c).Error(
+			fiber.ErrInternalServerError.Code,
+			string(generateAdminTokenErr),
+			err.Error(),
+		).Res()
+	}
+
+	return entities.NewResponse(c).Success(
+		fiber.StatusOK,
+		&struct {
+			Token string `json:"token" `
+		}{
+			Token: admintoKen.SignToken(),
+		},
 	).Res()
 }
