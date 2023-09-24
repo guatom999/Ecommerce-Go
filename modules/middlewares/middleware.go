@@ -1,4 +1,6 @@
 package middlewares
 
-type Middleware struct {
+type Role struct {
+	Id    int    `db:"id"`
+	Title string `db:"title"`
 }

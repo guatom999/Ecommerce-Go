@@ -17,6 +17,8 @@ type middlewareHandlerErrorCode string
 const (
 	routerCheckErr middlewareHandlerErrorCode = "middleware-001"
 	jwtAuthErr     middlewareHandlerErrorCode = "middleware-002"
+	paramsCheckErr middlewareHandlerErrorCode = "middleware-003"
+	authorizeErr   middlewareHandlerErrorCode = "middleware-004"
 )
 
 type IMiddlewareHandler interface {
@@ -24,6 +26,7 @@ type IMiddlewareHandler interface {
 	RouterCheck() fiber.Handler
 	Logger() fiber.Handler
 	JwtAuth() fiber.Handler
+	ParamsCheck() fiber.Handler
 }
 
 type middlewareHandler struct {
@@ -96,6 +99,44 @@ func (h *middlewareHandler) JwtAuth() fiber.Handler {
 
 		c.Locals("userId", claims.Id)
 		c.Locals("userRoleId", claims.RoleId)
+		return c.Next()
+	}
+}
+
+func (h *middlewareHandler) ParamsCheck() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userId := c.Locals("userId")
+		if c.Params("user_id") != userId {
+			return entities.NewResponse(c).Error(
+				fiber.ErrUnauthorized.Code,
+				string(paramsCheckErr),
+				"params doesn't match",
+			).Res()
+		}
+		return c.Next()
+	}
+}
+
+func (h *middlewareHandler) Authorize() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userRoleId, ok := c.Locals("userRoleId").(int)
+		if !ok {
+			return entities.NewResponse(c).Error(
+				fiber.ErrUnauthorized.Code,
+				string(authorizeErr),
+				"user_id is not int type",
+			).Res()
+		}
+
+		roles, err := h.middlewaresUsecase.FindRole()
+		if !ok {
+			return entities.NewResponse(c).Error(
+				fiber.ErrInternalServerError.Code,
+				string(authorizeErr),
+				err.Error(),
+			).Res()
+		}
+
 		return c.Next()
 	}
 }
