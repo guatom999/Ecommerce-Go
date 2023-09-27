@@ -10,6 +10,7 @@ import (
 	"github.com/guatom999/Ecommerce-Go/modules/entities"
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresUsecases"
 	"github.com/guatom999/Ecommerce-Go/pkg/authen"
+	"github.com/guatom999/Ecommerce-Go/pkg/utils"
 )
 
 type middlewareHandlerErrorCode string
@@ -27,6 +28,7 @@ type IMiddlewareHandler interface {
 	Logger() fiber.Handler
 	JwtAuth() fiber.Handler
 	ParamsCheck() fiber.Handler
+	Authorize(expectRoldId ...int) fiber.Handler
 }
 
 type middlewareHandler struct {
@@ -117,7 +119,7 @@ func (h *middlewareHandler) ParamsCheck() fiber.Handler {
 	}
 }
 
-func (h *middlewareHandler) Authorize() fiber.Handler {
+func (h *middlewareHandler) Authorize(expectRoldId ...int) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userRoleId, ok := c.Locals("userRoleId").(int)
 		if !ok {
@@ -137,6 +139,42 @@ func (h *middlewareHandler) Authorize() fiber.Handler {
 			).Res()
 		}
 
-		return c.Next()
+		sum := 0
+
+		for _, v := range expectRoldId {
+			sum += v
+		}
+
+		expectedValueBinary := utils.BinaryConverter(sum, len(roles))
+		userValueBinary := utils.BinaryConverter(userRoleId, len(roles))
+
+		for i := range userValueBinary {
+			if expectedValueBinary[i]&userValueBinary[i] == 1 {
+				return c.Next()
+			}
+		}
+
+		return entities.NewResponse(c).Error(
+			fiber.ErrUnauthorized.Code,
+			string(authorizeErr),
+			"no permission to access",
+		).Res()
+
+		// // fmt.Printf("expectedValueBinary :%v", expectedValueBinary)
+		// // fmt.Printf("userValueBinary :%v", userValueBinary)
+
+		// for i := range userValueBinary {
+		// 	fmt.Printf("compare value is :%v", expectedValueBinary[i]&userValueBinary[i])
+		// 	if expectedValueBinary[i]&userValueBinary[i] != 1 {
+		// 		return entities.NewResponse(c).Error(
+		// 			fiber.ErrUnauthorized.Code,
+		// 			string(authorizeErr),
+		// 			"no permission to access",
+		// 		).Res()
+		// 	}
+		// }
+
+		// return c.Next()
+
 	}
 }
