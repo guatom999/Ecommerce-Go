@@ -2,6 +2,9 @@ package servers
 
 import (
 	"github.com/gofiber/fiber/v2"
+	appinfohandlers "github.com/guatom999/Ecommerce-Go/modules/appinfo/appinfoHandlers"
+	appinforepositories "github.com/guatom999/Ecommerce-Go/modules/appinfo/appinfoRepositories"
+	appinfousecases "github.com/guatom999/Ecommerce-Go/modules/appinfo/appinfoUseCases"
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresHandlers"
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresRepositories"
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresUsecases"
@@ -14,6 +17,7 @@ import (
 type IModuleFactory interface {
 	MonitorModule()
 	UsersModule()
+	AppInfoModule()
 }
 
 type moduleFactory struct {
@@ -52,13 +56,29 @@ func (m *moduleFactory) UsersModule() {
 
 	router := m.router.Group("/users")
 
-	router.Post("/signup", handler.SignUpCustomer)
-	router.Post("/signin", handler.SignIn)
-	router.Post("/refresh", handler.RefeshPassport)
-	router.Post("/signout", handler.SignOut)
-	router.Post("/signup-admin", handler.SignUpAdmin)
+	router.Post("/signup", m.mid.ApiKeyCheck(), handler.SignUpCustomer)
+	router.Post("/signin", m.mid.ApiKeyCheck(), handler.SignIn)
+	router.Post("/refresh", m.mid.ApiKeyCheck(), handler.RefeshPassport)
+	router.Post("/signout", m.mid.ApiKeyCheck(), handler.SignOut)
+	router.Post("/signup-admin", m.mid.JwtAuth(), m.mid.Authorize(2), handler.SignUpAdmin)
 
 	router.Get("/:user_id", m.mid.JwtAuth(), m.mid.ParamsCheck(), handler.GetUserProfile)
 	router.Get("/admin/secret", m.mid.JwtAuth(), m.mid.Authorize(2), handler.GenerateAdminToken)
+
+}
+
+func (m *moduleFactory) AppInfoModule() {
+	repository := appinforepositories.AppinfoRepository(m.server.db)
+	usecase := appinfousecases.AppinfoUseCase(repository)
+	handler := appinfohandlers.AppinfoHandler(m.server.cfg, usecase)
+
+	router := m.router.Group("/appinfo")
+
+	router.Get("/apikey", m.mid.JwtAuth(), m.mid.Authorize(2), handler.GenerateApiKey)
+	router.Get("/categories", m.mid.ApiKeyCheck(), handler.FindCategory)
+
+	router.Post("/categories", m.mid.JwtAuth(), m.mid.Authorize(2), handler.AddCategory)
+
+	router.Delete("/:category_id/categories", m.mid.JwtAuth(), m.mid.Authorize(2), handler.RemoveCategory)
 
 }
