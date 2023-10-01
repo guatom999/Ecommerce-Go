@@ -133,7 +133,7 @@ func (h *middlewareHandler) Authorize(expectRoldId ...int) fiber.Handler {
 		}
 
 		roles, err := h.middlewaresUsecase.FindRole()
-		if !ok {
+		if err != nil {
 			return entities.NewResponse(c).Error(
 				fiber.ErrInternalServerError.Code,
 				string(authorizeErr),
