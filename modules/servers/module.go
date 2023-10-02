@@ -5,6 +5,8 @@ import (
 	appinfohandlers "github.com/guatom999/Ecommerce-Go/modules/appinfo/appinfoHandlers"
 	appinforepositories "github.com/guatom999/Ecommerce-Go/modules/appinfo/appinfoRepositories"
 	appinfousecases "github.com/guatom999/Ecommerce-Go/modules/appinfo/appinfoUseCases"
+	"github.com/guatom999/Ecommerce-Go/modules/files/filesHandlers"
+	"github.com/guatom999/Ecommerce-Go/modules/files/filesUseCases"
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresHandlers"
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresRepositories"
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresUsecases"
@@ -18,6 +20,7 @@ type IModuleFactory interface {
 	MonitorModule()
 	UsersModule()
 	AppInfoModule()
+	FileTransferModule()
 }
 
 type moduleFactory struct {
@@ -81,4 +84,15 @@ func (m *moduleFactory) AppInfoModule() {
 
 	router.Delete("/:category_id/categories", m.mid.JwtAuth(), m.mid.Authorize(2), handler.RemoveCategory)
 
+}
+
+func (m *moduleFactory) FileTransferModule() {
+	usecase := filesUseCases.FilesUseCase(m.server.cfg)
+	handler := filesHandlers.FilesHandler(m.server.cfg, usecase)
+
+	router := m.router.Group("/files")
+
+	router.Post("/upload", m.mid.JwtAuth(), m.mid.Authorize(2), handler.UploadFiles)
+	// _ = router
+	// _ = handler
 }
