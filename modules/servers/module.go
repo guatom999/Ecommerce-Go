@@ -11,6 +11,9 @@ import (
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresRepositories"
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresUsecases"
 	"github.com/guatom999/Ecommerce-Go/modules/monitor/monitorHandlers"
+	"github.com/guatom999/Ecommerce-Go/modules/products/productHandlers"
+	"github.com/guatom999/Ecommerce-Go/modules/products/productsRepositories"
+	"github.com/guatom999/Ecommerce-Go/modules/products/productsUseCases"
 	"github.com/guatom999/Ecommerce-Go/modules/users/usersHandlers"
 	"github.com/guatom999/Ecommerce-Go/modules/users/usersRepositories"
 	"github.com/guatom999/Ecommerce-Go/modules/users/usersUsecases"
@@ -21,6 +24,7 @@ type IModuleFactory interface {
 	UsersModule()
 	AppInfoModule()
 	FileTransferModule()
+	ProductsModule()
 }
 
 type moduleFactory struct {
@@ -93,6 +97,20 @@ func (m *moduleFactory) FileTransferModule() {
 	router := m.router.Group("/files")
 
 	router.Post("/upload", m.mid.JwtAuth(), m.mid.Authorize(2), handler.UploadFiles)
+	router.Patch("/delete", m.mid.JwtAuth(), m.mid.Authorize(2), handler.DeleteFile)
 	// _ = router
 	// _ = handler
+}
+
+func (m *moduleFactory) ProductsModule() {
+	fileUsecase := filesUseCases.FilesUseCase(m.server.cfg)
+
+	productsRepository := productsRepositories.ProductRepository(m.server.db, m.server.cfg, fileUsecase)
+	productsUsecase := productsUseCases.ProductsUseCase(productsRepository)
+	productsHandler := productHandlers.ProductsHandler(m.server.cfg, productsUsecase, fileUsecase)
+
+	router := m.router.Group("/products")
+
+	router.Get("/:product_id", m.mid.ApiKeyCheck(), productsHandler.FindOneProduct)
+
 }
