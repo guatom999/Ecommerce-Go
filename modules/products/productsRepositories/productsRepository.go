@@ -8,11 +8,13 @@ import (
 	"github.com/guatom999/Ecommerce-Go/modules/entities"
 	"github.com/guatom999/Ecommerce-Go/modules/files/filesUseCases"
 	"github.com/guatom999/Ecommerce-Go/modules/products"
+	"github.com/guatom999/Ecommerce-Go/modules/products/productPatterns"
 	"github.com/jmoiron/sqlx"
 )
 
 type IProductRepository interface {
 	FindOneProduct(productId string) (*products.Product, error)
+	FindProduct(req *products.ProductFilter) ([]*products.Product, int)
 }
 
 type productRepository struct {
@@ -86,4 +88,15 @@ func (r *productRepository) FindOneProduct(productId string) (*products.Product,
 	}
 
 	return product, nil
+}
+
+func (r *productRepository) FindProduct(req *products.ProductFilter) ([]*products.Product, int) {
+	builder := productPatterns.FindProductBuilder(r.db, req)
+	engineer := productPatterns.FindProductEngineer(builder)
+
+	result := engineer.FindProduct().Result()
+	count := engineer.FindProduct().Count()
+
+	return result, count
+
 }

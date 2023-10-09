@@ -111,6 +111,7 @@ func (m *moduleFactory) ProductsModule() {
 
 	router := m.router.Group("/products")
 
+	router.Get("/", m.mid.ApiKeyCheck(), productsHandler.FindProduct)
 	router.Get("/:product_id", m.mid.ApiKeyCheck(), productsHandler.FindOneProduct)
 
 }
