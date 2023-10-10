@@ -33,7 +33,7 @@ type findProductBuilder struct {
 	req            *products.ProductFilter
 	query          string
 	lastStackIndex int
-	value          []any
+	values         []any
 }
 
 func FindProductBuilder(db *sqlx.DB, req *products.ProductFilter) IFindProductBuilder {
@@ -44,12 +44,10 @@ func FindProductBuilder(db *sqlx.DB, req *products.ProductFilter) IFindProductBu
 }
 
 func (b *findProductBuilder) openJsonQuery() {
-	b.query +=
-		`
+	b.query += `
 	SELECT 
 		array_to_json(array_agg("t"))
-	FROM (
-	`
+	FROM (`
 }
 func (b *findProductBuilder) initQuery() {
 	b.query += `		
@@ -96,13 +94,14 @@ func (b *findProductBuilder) countQuery() {
 	WHERE 1 = 1
 	`
 }
+
 func (b *findProductBuilder) whereQuery() {
 	var queryWhere string
 	queryWhereStack := make([]string, 0)
 
 	// ID Check
 	if b.req.Id != "" {
-		b.value = append(b.value, b.req.Id)
+		b.values = append(b.values, b.req.Id)
 
 		queryWhereStack = append(queryWhereStack, `
 		AND "p"."id" = ?
@@ -111,7 +110,11 @@ func (b *findProductBuilder) whereQuery() {
 
 	//Search check
 	if b.req.Search != "" {
-		b.value = append(b.value, "%"+strings.ToLower(b.req.Search)+"%", "%"+strings.ToLower(b.req.Search)+"%")
+		b.values = append(
+			b.values,
+			"%"+strings.ToLower(b.req.Search)+"%",
+			"%"+strings.ToLower(b.req.Search)+"%",
+		)
 
 		queryWhereStack = append(
 			queryWhereStack,
@@ -128,7 +131,7 @@ func (b *findProductBuilder) whereQuery() {
 		}
 	}
 
-	b.lastStackIndex = len(b.value)
+	b.lastStackIndex = len(b.values)
 
 	// summary query
 	b.query += queryWhere
@@ -161,17 +164,17 @@ func (b *findProductBuilder) sort() {
 		b.req.Sort = sortMap[strings.ToUpper(b.req.Sort)]
 	}
 
-	b.value = append(b.value, b.req.OrderBy)
-	b.query += fmt.Sprintf(`ORDER BY $%d %s`, b.lastStackIndex+1, b.req.Sort)
-	b.lastStackIndex = len(b.value)
+	b.values = append(b.values, b.req.OrderBy)
+	b.query += fmt.Sprintf(` ORDER BY $%d %s`, b.lastStackIndex+1, b.req.Sort)
+	b.lastStackIndex = len(b.values)
 }
 func (b *findProductBuilder) paginate() {
 
-	b.value = append(b.value, (b.req.Page-1)*b.req.Limit, b.req.Limit)
+	b.values = append(b.values, (b.req.Page-1)*b.req.Limit, b.req.Limit)
 
 	b.query += fmt.Sprintf(` OFFSET $%d LIMIT $%d`, b.lastStackIndex+1, b.lastStackIndex+2)
 
-	b.lastStackIndex = len(b.value)
+	b.lastStackIndex = len(b.values)
 
 }
 func (b *findProductBuilder) closeJsonQuery() {
@@ -183,7 +186,7 @@ func (b *findProductBuilder) closeJsonQuery() {
 func (b *findProductBuilder) resetQuery() {
 
 	b.query = ""
-	b.value = make([]any, 0)
+	b.values = make([]any, 0)
 	b.lastStackIndex = 0
 }
 func (b *findProductBuilder) Result() []*products.Product {
@@ -193,7 +196,7 @@ func (b *findProductBuilder) Result() []*products.Product {
 	bytes := make([]byte, 0)
 	productsData := make([]*products.Product, 0)
 
-	if err := b.db.Get(&bytes, b.query, b.value...); err != nil {
+	if err := b.db.Get(&bytes, b.query, b.values...); err != nil {
 		log.Printf("find product fail:%v", err)
 		return make([]*products.Product, 0)
 	}
@@ -213,7 +216,7 @@ func (b *findProductBuilder) Count() int {
 	defer cancel()
 
 	var count int
-	if err := b.db.Get(&count, b.query, b.value...); err != nil {
+	if err := b.db.Get(&count, b.query, b.values...); err != nil {
 		log.Printf("get count failed:%v", err)
 		return 0
 	}
@@ -224,7 +227,7 @@ func (b *findProductBuilder) Count() int {
 }
 func (b *findProductBuilder) PrintQuery() {
 
-	utils.Debug(b.value)
+	utils.Debug(b.values)
 	fmt.Printf("query is :%v", b.query)
 
 }
