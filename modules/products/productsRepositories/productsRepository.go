@@ -95,7 +95,9 @@ func (r *productRepository) FindProduct(req *products.ProductFilter) ([]*product
 	engineer := productPatterns.FindProductEngineer(builder)
 
 	result := engineer.FindProduct().Result()
-	count := engineer.FindProduct().Count()
+	count := engineer.CountProduct().Count()
+
+	// fmt.Printf("result is :%v", result)
 
 	return result, count
 
