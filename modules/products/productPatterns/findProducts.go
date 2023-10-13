@@ -240,6 +240,7 @@ func FindProductEngineer(builder IFindProductBuilder) *findProductEngineer {
 	return &findProductEngineer{builder: builder}
 }
 
+// ยังไม่เก็ท
 func (en *findProductEngineer) FindProduct() IFindProductBuilder {
 	en.builder.openJsonQuery()
 	en.builder.initQuery()
@@ -255,3 +256,7 @@ func (en *findProductEngineer) CountProduct() IFindProductBuilder {
 	en.builder.whereQuery()
 	return en.builder
 }
+
+// func (en *findProductEngineer) SumPrice() IFindProductBuilder {
+// 	return nil
+// }
