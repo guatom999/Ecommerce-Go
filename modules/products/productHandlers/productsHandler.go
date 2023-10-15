@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/guatom999/Ecommerce-Go/config"
+	"github.com/guatom999/Ecommerce-Go/modules/appinfo"
 	"github.com/guatom999/Ecommerce-Go/modules/entities"
 	"github.com/guatom999/Ecommerce-Go/modules/files/filesUseCases"
 	"github.com/guatom999/Ecommerce-Go/modules/products"
@@ -16,11 +17,13 @@ type productErrCode string
 const (
 	findOneProductErr productErrCode = "product-001"
 	findProductErr    productErrCode = "product-002"
+	insertProductErr  productErrCode = "product-003"
 )
 
 type IProductsHandler interface {
 	FindOneProduct(c *fiber.Ctx) error
 	FindProduct(c *fiber.Ctx) error
+	AddProduct(c *fiber.Ctx) error
 }
 
 type productsHandler struct {
@@ -95,4 +98,41 @@ func (h *productsHandler) FindProduct(c *fiber.Ctx) error {
 		product,
 	).Res()
 
+}
+
+func (h *productsHandler) AddProduct(c *fiber.Ctx) error {
+
+	req := &products.Product{
+		Category: &appinfo.Category{},
+		Image:    make([]*entities.Image, 0),
+	}
+	if err := c.BodyParser(req); err != nil {
+		return entities.NewResponse(c).Error(
+			fiber.ErrBadRequest.Code,
+			string(insertProductErr),
+			err.Error(),
+		).Res()
+	}
+	if req.Category.Id <= 0 {
+		return entities.NewResponse(c).Error(
+			fiber.ErrInternalServerError.Code,
+			string(insertProductErr),
+			"category id is invalid",
+		).Res()
+	}
+
+	product, err := h.productsUseCase.AddProduct(req)
+
+	if err != nil {
+		return entities.NewResponse(c).Error(
+			fiber.ErrBadGateway.Code,
+			string(insertProductErr),
+			err.Error(),
+		).Res()
+	}
+
+	return entities.NewResponse(c).Success(
+		fiber.StatusCreated,
+		product,
+	).Res()
 }

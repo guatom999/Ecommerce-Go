@@ -89,11 +89,11 @@ func (b *insertProductBuilder) insertCategory() error {
 	defer cancel()
 
 	query := `
-	INSERT INTO "products_categories" ( 
+	INSERT INTO "products_categories" (
 		"product_id",
-		"category_id",
-	) VALUES ($1 , $2);
-	`
+		"category_id"
+	)
+	VALUES ($1, $2);`
 
 	if _, err := b.tx.ExecContext(ctx, query, b.req.Id, b.req.Category.Id); err != nil {
 		b.tx.Rollback()
@@ -108,13 +108,12 @@ func (b *insertProductBuilder) insertAttacthment() error {
 	defer cancel()
 
 	query := `
-	INSERT INTO "images" ( 
+	INSERT INTO "images" (
 		"filename",
 		"url",
 		"product_id"
 	)
-	VAULES
-	`
+	VALUES`
 
 	valuesStack := make([]any, 0)
 	var index int
@@ -127,9 +126,9 @@ func (b *insertProductBuilder) insertAttacthment() error {
 		)
 
 		if i != len(b.req.Image)-1 {
-			query += fmt.Sprintf(`($%d, $%d, $%d),`, index+1, index+2, index+3)
+			query += fmt.Sprintf(` ($%d, $%d, $%d),`, index+1, index+2, index+3)
 		} else {
-			query += fmt.Sprintf(`($%d, $%d, $%d);`, index+1, index+2, index+3)
+			query += fmt.Sprintf(` ($%d, $%d, $%d);`, index+1, index+2, index+3)
 		}
 
 		index += 3
@@ -147,11 +146,17 @@ func (b *insertProductBuilder) insertAttacthment() error {
 	return nil
 }
 func (b *insertProductBuilder) commit() error {
+
+	if err := b.tx.Commit(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (b *insertProductBuilder) getProductId() string {
-	return ""
+
+	return b.req.Id
 }
 
 func InsertProductEngineer(builder IInsertProductBuilder) *insertProductEngineer {
@@ -159,5 +164,23 @@ func InsertProductEngineer(builder IInsertProductBuilder) *insertProductEngineer
 }
 
 func (en *insertProductEngineer) InsertProduct() (string, error) {
-	return "", nil
+
+	if err := en.builder.initTransaction(); err != nil {
+		return "", err
+	}
+	if err := en.builder.insertProduct(); err != nil {
+		return "", err
+	}
+	if err := en.builder.insertCategory(); err != nil {
+		return "", err
+	}
+	if err := en.builder.insertAttacthment(); err != nil {
+		return "", err
+	}
+	if err := en.builder.commit(); err != nil {
+		return "", err
+	}
+
+	return en.builder.getProductId(), nil
+
 }
