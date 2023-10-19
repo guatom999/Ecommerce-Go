@@ -17,7 +17,7 @@ type IUpdateProductBuilder interface {
 	updateTitleQuery()
 	updateDescriptionQuery()
 	updatePriceQuery()
-	updateCategoryQuery() error
+	updateCategory() error
 	insertImages() error
 	getOldImages() []*entities.Image
 	deleteOldImages() error
@@ -46,12 +46,12 @@ type updateproductBuilder struct {
 
 func UpdateProductBuilder(db *sqlx.DB, req *products.Product, filesUsecases filesUseCases.IFilesUseCases) IUpdateProductBuilder {
 	return &updateproductBuilder{
-		db:             db,
-		req:            req,
-		filesUsecases:  filesUsecases,
-		queryField:     make([]string, 0),
-		values:         make([]any, 0),
-		lastStackIndex: 0,
+		db:            db,
+		req:           req,
+		filesUsecases: filesUsecases,
+		queryField:    make([]string, 0),
+		values:        make([]any, 0),
+		// lastStackIndex: 0,
 	}
 }
 
@@ -70,7 +70,7 @@ func (b *updateproductBuilder) initTransaction() error {
 }
 func (b *updateproductBuilder) initQuery() {
 
-	b.query = `
+	b.query += `
 	UPDATE "products" SET`
 
 }
@@ -80,7 +80,8 @@ func (b *updateproductBuilder) updateTitleQuery() {
 		b.values = append(b.values, b.req.Title)
 		b.lastStackIndex = len(b.values)
 
-		b.queryField = append(b.queryField, fmt.Sprintf(`"title" = $%d`, b.lastStackIndex))
+		b.queryField = append(b.queryField, fmt.Sprintf(`
+		"title" = $%d`, b.lastStackIndex))
 
 	}
 
@@ -91,7 +92,8 @@ func (b *updateproductBuilder) updateDescriptionQuery() {
 		b.values = append(b.values, b.req.Description)
 		b.lastStackIndex = len(b.values)
 
-		b.queryField = append(b.queryField, fmt.Sprintf(`"description" = $%d`, b.lastStackIndex))
+		b.queryField = append(b.queryField, fmt.Sprintf(`
+		"description" = $%d`, b.lastStackIndex))
 
 	}
 
@@ -103,12 +105,12 @@ func (b *updateproductBuilder) updatePriceQuery() {
 		b.lastStackIndex = len(b.values)
 
 		b.queryField = append(b.queryField, fmt.Sprintf(`
-		WHERE "id" = $%d `, b.lastStackIndex))
+		"price" = $%d`, b.lastStackIndex))
 
 	}
 
 }
-func (b *updateproductBuilder) updateCategoryQuery() error {
+func (b *updateproductBuilder) updateCategory() error {
 
 	if b.req.Category == nil {
 		return nil
@@ -132,7 +134,6 @@ func (b *updateproductBuilder) updateCategoryQuery() error {
 
 }
 func (b *updateproductBuilder) insertImages() error {
-
 	query := `
 	INSERT INTO "images" (
 		"filename",
@@ -141,37 +142,36 @@ func (b *updateproductBuilder) insertImages() error {
 	)
 	VALUES`
 
-	valuesStack := make([]any, 0)
+	valueStack := make([]any, 0)
 	var index int
 	for i := range b.req.Image {
-		valuesStack = append(
-			valuesStack,
+		valueStack = append(valueStack,
 			b.req.Image[i].FileName,
 			b.req.Image[i].Url,
 			b.req.Id,
 		)
 
 		if i != len(b.req.Image)-1 {
-			query += fmt.Sprintf(` ($%d, $%d, $%d),`, index+1, index+2, index+3)
+			query += fmt.Sprintf(`
+			($%d, $%d, $%d),`, index+1, index+2, index+3)
 		} else {
-			query += fmt.Sprintf(` ($%d, $%d, $%d);`, index+1, index+2, index+3)
+			query += fmt.Sprintf(`
+			($%d, $%d, $%d);`, index+1, index+2, index+3)
 		}
-
 		index += 3
 	}
 
 	if _, err := b.tx.ExecContext(
 		context.Background(),
 		query,
-		valuesStack...,
+		valueStack...,
 	); err != nil {
 		b.tx.Rollback()
-		return fmt.Errorf("insert image failed: %v", err)
+		return fmt.Errorf("insert images failed: %v", err)
 	}
-
 	return nil
-
 }
+
 func (b *updateproductBuilder) getOldImages() []*entities.Image {
 
 	query := `
@@ -223,7 +223,9 @@ func (b *updateproductBuilder) closeQuery() {
 	b.values = append(b.values, b.req.Price)
 	b.lastStackIndex = len(b.values)
 
-	b.queryField = append(b.queryField, fmt.Sprintf(`"price" = $%d`, b.lastStackIndex))
+	// b.queryField = append(b.queryField, fmt.Sprintf(`"price" = $%d`, b.lastStackIndex))
+	b.query += fmt.Sprintf(` 
+	WHERE "id" =  $%d`, b.lastStackIndex)
 
 }
 
@@ -247,30 +249,15 @@ func (b *updateproductBuilder) updateProduct() error {
 	return nil
 
 }
-func (b *updateproductBuilder) getQueryFields() []string {
-
-	return b.queryField
-}
-func (b *updateproductBuilder) getValues() []any {
-	return b.values
-}
-func (b *updateproductBuilder) getQuery() string {
-	return b.query
-}
-func (b *updateproductBuilder) setQuery(query string) {
-
-	b.query = query
-
-}
-func (b *updateproductBuilder) getImagesLen() int {
-	return len(b.req.Image)
-}
+func (b *updateproductBuilder) getQueryFields() []string { return b.queryField }
+func (b *updateproductBuilder) getValues() []any         { return b.values }
+func (b *updateproductBuilder) getQuery() string         { return b.query }
+func (b *updateproductBuilder) setQuery(query string)    { b.query = query }
+func (b *updateproductBuilder) getImagesLen() int        { return len(b.req.Image) }
 func (b *updateproductBuilder) commit() error {
-
 	if err := b.tx.Commit(); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -282,6 +269,56 @@ func UpdateProductEngineer(builder IUpdateProductBuilder) *updateProductEngineer
 	return &updateProductEngineer{builder: builder}
 }
 
+func (en *updateProductEngineer) sumQueryFeilds() {
+
+	en.builder.updateTitleQuery()
+	en.builder.updateDescriptionQuery()
+	en.builder.updatePriceQuery()
+
+	fields := en.builder.getQueryFields()
+
+	for i := range fields {
+		query := en.builder.getQuery()
+		if i != len(fields)-1 {
+			en.builder.setQuery(query + fields[i] + ",")
+		} else {
+			en.builder.setQuery(query + fields[i])
+		}
+	}
+	// en.builder.updateCategoryQuery()
+
+}
+
 func (en *updateProductEngineer) UpdateProduct() error {
+
+	en.builder.initTransaction()
+
+	en.builder.initQuery()
+	en.sumQueryFeilds()
+	en.builder.closeQuery()
+
+	fmt.Println(en.builder.getQuery())
+
+	if err := en.builder.updateProduct(); err != nil {
+		return err
+	}
+
+	if err := en.builder.updateCategory(); err != nil {
+		return err
+	}
+
+	if en.builder.getImagesLen() > 0 {
+		if err := en.builder.deleteOldImages(); err != nil {
+			return err
+		}
+		if err := en.builder.insertImages(); err != nil {
+			return err
+		}
+	}
+
+	if err := en.builder.commit(); err != nil {
+		return err
+	}
+
 	return nil
 }
