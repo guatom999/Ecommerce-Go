@@ -101,12 +101,11 @@ func (b *updateproductBuilder) updateDescriptionQuery() {
 func (b *updateproductBuilder) updatePriceQuery() {
 
 	if b.req.Price > 0 {
-		b.values = append(b.values, b.req.Id)
+		b.values = append(b.values, b.req.Price)
 		b.lastStackIndex = len(b.values)
 
 		b.queryField = append(b.queryField, fmt.Sprintf(`
 		"price" = $%d`, b.lastStackIndex))
-
 	}
 
 }
@@ -125,7 +124,11 @@ func (b *updateproductBuilder) updateCategory() error {
 		"category_id" = $1 
 	WHERE "product_id" = $2;`
 
-	if _, err := b.tx.ExecContext(context.Background(), query, b.req.Category.Id, b.req.Id); err != nil {
+	if _, err := b.tx.ExecContext(context.Background(),
+		query,
+		b.req.Category.Id,
+		b.req.Id,
+	); err != nil {
 		b.tx.Rollback()
 		return fmt.Errorf("update product_categories failed: %v", err)
 	}
@@ -193,7 +196,8 @@ func (b *updateproductBuilder) getOldImages() []*entities.Image {
 func (b *updateproductBuilder) deleteOldImages() error {
 
 	query := `
-	DELETE FROM "images" WHERE "product_id" = $1;`
+	DELETE FROM "images" 
+	WHERE "product_id" = $1;`
 
 	images := b.getOldImages()
 
@@ -204,10 +208,7 @@ func (b *updateproductBuilder) deleteOldImages() error {
 				Destination: fmt.Sprintf("images/products/%s", image.FileName),
 			})
 		}
-		if err := b.filesUsecases.DeleteFileOnGCP(deleteFileReq); err != nil {
-			b.tx.Rollback()
-			return err
-		}
+		b.filesUsecases.DeleteFileOnGCP(deleteFileReq)
 
 	}
 	if _, err := b.tx.ExecContext(context.Background(), query, b.req.Id); err != nil {
@@ -220,7 +221,7 @@ func (b *updateproductBuilder) deleteOldImages() error {
 }
 func (b *updateproductBuilder) closeQuery() {
 
-	b.values = append(b.values, b.req.Price)
+	b.values = append(b.values, b.req.Id)
 	b.lastStackIndex = len(b.values)
 
 	// b.queryField = append(b.queryField, fmt.Sprintf(`"price" = $%d`, b.lastStackIndex))
