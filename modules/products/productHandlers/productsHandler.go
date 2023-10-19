@@ -1,12 +1,14 @@
 package productHandlers
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/guatom999/Ecommerce-Go/config"
 	"github.com/guatom999/Ecommerce-Go/modules/appinfo"
 	"github.com/guatom999/Ecommerce-Go/modules/entities"
+	"github.com/guatom999/Ecommerce-Go/modules/files"
 	"github.com/guatom999/Ecommerce-Go/modules/files/filesUseCases"
 	"github.com/guatom999/Ecommerce-Go/modules/products"
 	"github.com/guatom999/Ecommerce-Go/modules/products/productsUseCases"
@@ -27,6 +29,7 @@ type IProductsHandler interface {
 	FindProduct(c *fiber.Ctx) error
 	AddProduct(c *fiber.Ctx) error
 	UpdateProduct(c *fiber.Ctx) error
+	DeleteProduct(c *fiber.Ctx) error
 }
 
 type productsHandler struct {
@@ -170,5 +173,47 @@ func (h *productsHandler) UpdateProduct(c *fiber.Ctx) error {
 	return entities.NewResponse(c).Success(
 		fiber.StatusCreated,
 		product,
+	).Res()
+}
+
+func (h *productsHandler) DeleteProduct(c *fiber.Ctx) error {
+
+	productId := strings.Trim(c.Params("product_id"), " ")
+	product, err := h.productsUseCase.FindOneProduct(productId)
+
+	if err != nil {
+		return entities.NewResponse(c).Error(
+			fiber.ErrInternalServerError.Code,
+			string(deleteProductErr),
+			err.Error(),
+		).Res()
+	}
+
+	deleteFileReq := make([]*files.DeleteFileReq, 0)
+	for _, file := range product.Image {
+		deleteFileReq = append(deleteFileReq, &files.DeleteFileReq{
+			Destination: fmt.Sprintf("images/test/%s", file.FileName),
+		})
+	}
+
+	if err := h.filesUseCases.DeleteFileOnGCP(deleteFileReq); err != nil {
+		return entities.NewResponse(c).Error(
+			fiber.ErrInternalServerError.Code,
+			string(deleteProductErr),
+			err.Error(),
+		).Res()
+	}
+
+	if err := h.productsUseCase.DeleteProduct(productId); err != nil {
+		return entities.NewResponse(c).Error(
+			fiber.ErrInternalServerError.Code,
+			string(deleteProductErr),
+			err.Error(),
+		).Res()
+	}
+
+	return entities.NewResponse(c).Success(
+		fiber.StatusOK,
+		string("delete success"),
 	).Res()
 }
