@@ -11,6 +11,9 @@ import (
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresRepositories"
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresUsecases"
 	"github.com/guatom999/Ecommerce-Go/modules/monitor/monitorHandlers"
+	"github.com/guatom999/Ecommerce-Go/modules/orders/ordersHandlers.go"
+	"github.com/guatom999/Ecommerce-Go/modules/orders/ordersRepositories"
+	"github.com/guatom999/Ecommerce-Go/modules/orders/ordersUseCases.go"
 	"github.com/guatom999/Ecommerce-Go/modules/products/productHandlers"
 	"github.com/guatom999/Ecommerce-Go/modules/products/productsRepositories"
 	"github.com/guatom999/Ecommerce-Go/modules/products/productsUseCases"
@@ -120,5 +123,21 @@ func (m *moduleFactory) ProductsModule() {
 	router.Get("/:product_id", m.mid.ApiKeyCheck(), productsHandler.FindOneProduct)
 
 	// router.Delete("/:product_id", m.mid.ApiKeyCheck(), productsHandler.DeleteProduct)
+
+}
+
+func (m *moduleFactory) OrderModule() {
+
+	fileUsecase := filesUseCases.FilesUseCase(m.server.cfg)
+	productsRepository := productsRepositories.ProductRepository(m.server.db, m.server.cfg, fileUsecase)
+
+	ordersRepository := ordersRepositories.OrderRepository(m.server.db)
+	ordersUsecase := ordersUseCases.OrderUseCase(ordersRepository, productsRepository)
+	ordersHandler := ordersHandlers.OrderHandler(m.server.cfg, ordersUsecase)
+
+	router := m.router.Group("/orders")
+
+	_ = ordersHandler
+	_ = router
 
 }
