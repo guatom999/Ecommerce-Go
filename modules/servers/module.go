@@ -28,6 +28,7 @@ type IModuleFactory interface {
 	AppInfoModule()
 	FileTransferModule()
 	ProductsModule()
+	OrderModule()
 }
 
 type moduleFactory struct {
@@ -137,7 +138,6 @@ func (m *moduleFactory) OrderModule() {
 
 	router := m.router.Group("/orders")
 
-	_ = ordersHandler
-	_ = router
+	router.Get("/:order_id", m.mid.JwtAuth(), ordersHandler.FindOneOrder)
 
 }

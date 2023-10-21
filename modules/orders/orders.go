@@ -6,7 +6,7 @@ type Order struct {
 	Id           string           `db:"id" json:"id"`
 	UserId       string           `db:"user_id" json:"user_id"`
 	TransferSlip *TransferSlip    `db:"transfer_slip" json:"transfer_slip"`
-	Produst      []*productsOrder `db:"products_order" json:"products_order"`
+	Product      []*ProductsOrder `db:"products" json:"products"`
 	Address      string           `db:"address" json:"address"`
 	Contact      string           `db:"contact" json:"contact"`
 	Status       string           `db:"status" json:"status"`
@@ -22,7 +22,7 @@ type TransferSlip struct {
 	CreatedAt string `json:"created_at"`
 }
 
-type productsOrder struct {
+type ProductsOrder struct {
 	Id       string            `db:"id" json:"id"`
 	Quantity int               `db:"qty" json:"qty"`
 	Product  *products.Product `db:"product" json:"product"`
