@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/guatom999/Ecommerce-Go/config"
 	"github.com/guatom999/Ecommerce-Go/modules/entities"
-	"github.com/guatom999/Ecommerce-Go/modules/orders/ordersUseCases.go"
+	"github.com/guatom999/Ecommerce-Go/modules/orders/ordersUseCases"
 )
 
 type orderErrCode string
