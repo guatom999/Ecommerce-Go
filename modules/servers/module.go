@@ -11,9 +11,9 @@ import (
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresRepositories"
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares/middlewaresUsecases"
 	"github.com/guatom999/Ecommerce-Go/modules/monitor/monitorHandlers"
-	"github.com/guatom999/Ecommerce-Go/modules/orders/ordersHandlers.go"
+	"github.com/guatom999/Ecommerce-Go/modules/orders/ordersHandlers"
 	"github.com/guatom999/Ecommerce-Go/modules/orders/ordersRepositories"
-	"github.com/guatom999/Ecommerce-Go/modules/orders/ordersUseCases.go"
+	"github.com/guatom999/Ecommerce-Go/modules/orders/ordersUseCases"
 	"github.com/guatom999/Ecommerce-Go/modules/products/productHandlers"
 	"github.com/guatom999/Ecommerce-Go/modules/products/productsRepositories"
 	"github.com/guatom999/Ecommerce-Go/modules/products/productsUseCases"
@@ -139,5 +139,6 @@ func (m *moduleFactory) OrderModule() {
 	router := m.router.Group("/orders")
 
 	router.Get("/:order_id", m.mid.JwtAuth(), ordersHandler.FindOneOrder)
+	router.Get("/", m.mid.JwtAuth(), m.mid.ParamsCheck(), ordersHandler.FindOrder)
 
 }
