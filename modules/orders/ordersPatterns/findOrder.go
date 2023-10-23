@@ -202,10 +202,7 @@ func (b *findOrderBuilder) buildPaginate() {
 	)
 
 	b.query = fmt.Sprintf(`
-		OFFSET $%d LIMIT $%d`,
-		b.lastIndex+1,
-		b.lastIndex+2,
-	)
+		OFFSET $%d LIMIT $%d`, b.lastIndex+1, b.lastIndex+2)
 
 	b.lastIndex = len(b.values)
 
