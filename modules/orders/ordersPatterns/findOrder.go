@@ -18,7 +18,7 @@ type IFindOrderBuilder interface {
 	buildWhereSearch()
 	buildWhereStatus()
 	buildWhereDate()
-	builSort()
+	buildSort()
 	buildPaginate()
 	closeQuery()
 	getQuery() string
@@ -50,7 +50,7 @@ type findOrderEngineer struct {
 	builder IFindOrderBuilder
 }
 
-func FundOrderEngineer(builder IFindOrderBuilder) *findOrderEngineer {
+func FindOrderEngineer(builder IFindOrderBuilder) *findOrderEngineer {
 	return &findOrderEngineer{builder: builder}
 }
 
@@ -160,8 +160,13 @@ func (b *findOrderBuilder) buildWhereDate() {
 			b.req.EndDate,
 		)
 
+		// query := fmt.Sprintf(`
+		// AND "o"."created_date" BETWEEN ($%d)::DATE AND ($%d)::DATE + 1`,
+		// 	b.lastIndex+1,
+		// 	b.lastIndex+2,
+		// )
 		query := fmt.Sprintf(`
-		AND "o"."created_date" BETWEEN ($%d)::DATE AND ($%d)::DATE + 1`,
+		AND "o"."created_at" BETWEEN DATE($%d) AND ($%d)::DATE + 1`,
 			b.lastIndex+1,
 			b.lastIndex+2,
 		)
@@ -175,12 +180,12 @@ func (b *findOrderBuilder) buildWhereDate() {
 
 }
 
-func (b *findOrderBuilder) builSort() {
+func (b *findOrderBuilder) buildSort() {
 
 	b.values = append(b.values, b.req.OrderBy)
 
 	b.query += fmt.Sprintf(`
-	ORDER BY $%d %s`,
+		ORDER BY $%d %s`,
 		b.lastIndex+1,
 		b.req.Sort)
 
@@ -190,13 +195,14 @@ func (b *findOrderBuilder) builSort() {
 
 func (b *findOrderBuilder) buildPaginate() {
 
-	b.values = append(b.values,
-		(b.req.Page-1)*b.req.Limit, b.req.Limit,
+	b.values = append(
+		b.values,
+		(b.req.Page-1)*b.req.Limit,
+		b.req.Limit,
 	)
 
 	b.query = fmt.Sprintf(`
-	OFFSET $%d LIMIT $%d
-	`,
+		OFFSET $%d LIMIT $%d`,
 		b.lastIndex+1,
 		b.lastIndex+2,
 	)
@@ -232,17 +238,18 @@ func (b *findOrderBuilder) reset() {
 }
 
 func (en *findOrderEngineer) FindOrder() []*orders.Order {
-
-	_, cancel := context.WithTimeout(context.Background(), time.Second*60)
+	_, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 
 	en.builder.initQuery()
 	en.builder.buildWhereSearch()
 	en.builder.buildWhereStatus()
 	en.builder.buildWhereDate()
-	en.builder.builSort()
+	en.builder.buildSort()
 	en.builder.buildPaginate()
 	en.builder.closeQuery()
+
+	fmt.Println(en.builder.getQuery())
 
 	raw := make([]byte, 0)
 	if err := en.builder.getDb().Get(&raw, en.builder.getQuery(), en.builder.getValues()...); err != nil {
@@ -252,12 +259,10 @@ func (en *findOrderEngineer) FindOrder() []*orders.Order {
 
 	ordersData := make([]*orders.Order, 0)
 	if err := json.Unmarshal(raw, &ordersData); err != nil {
-		log.Printf("unmarshal failed: %v\n", err)
-		return make([]*orders.Order, 0)
+		log.Printf("unmarshal orders failed: %v\n", err)
 	}
 
 	en.builder.reset()
-
 	return ordersData
 }
 

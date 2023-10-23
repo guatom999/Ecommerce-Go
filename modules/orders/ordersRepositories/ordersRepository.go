@@ -82,7 +82,7 @@ func (r *orderRepository) FindOneProduct(orderId string) (*orders.Order, error) 
 func (r *orderRepository) FindOrder(req *orders.OrderFilter) ([]*orders.Order, int) {
 
 	builder := ordersPatterns.FindOrderBuilder(r.db, req)
-	engineer := ordersPatterns.FundOrderEngineer(builder)
+	engineer := ordersPatterns.FindOrderEngineer(builder)
 
 	return engineer.FindOrder(), engineer.CountOrder()
 }
