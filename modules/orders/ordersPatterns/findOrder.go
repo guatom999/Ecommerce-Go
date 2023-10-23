@@ -124,7 +124,7 @@ func (b *findOrderBuilder) buildWhereSearch() {
 
 		temp := b.getQuery()
 		temp += query
-		b.setQuery(query)
+		b.setQuery(temp)
 
 		b.lastIndex = len(b.values)
 	}
@@ -145,7 +145,7 @@ func (b *findOrderBuilder) buildWhereStatus() {
 
 		temp := b.getQuery()
 		temp += query
-		b.setQuery(query)
+		b.setQuery(temp)
 
 		b.lastIndex = len(b.values)
 	}
@@ -173,7 +173,7 @@ func (b *findOrderBuilder) buildWhereDate() {
 
 		temp := b.getQuery()
 		temp += query
-		b.setQuery(query)
+		b.setQuery(temp)
 
 		b.lastIndex = len(b.values)
 	}
@@ -238,6 +238,9 @@ func (b *findOrderBuilder) reset() {
 }
 
 func (en *findOrderEngineer) FindOrder() []*orders.Order {
+
+	fmt.Println(en.builder.getQuery())
+
 	_, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 
@@ -248,8 +251,6 @@ func (en *findOrderEngineer) FindOrder() []*orders.Order {
 	en.builder.buildSort()
 	en.builder.buildPaginate()
 	en.builder.closeQuery()
-
-	fmt.Println(en.builder.getQuery())
 
 	raw := make([]byte, 0)
 	if err := en.builder.getDb().Get(&raw, en.builder.getQuery(), en.builder.getValues()...); err != nil {
