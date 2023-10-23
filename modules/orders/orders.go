@@ -10,8 +10,8 @@ type OrderFilter struct {
 	Status    string `query:"status"`
 	StartDate string `query:"start_date"`
 	EndDate   string `query:"end_date"`
-	*entities.PaginationReq
 	*entities.SortReq
+	*entities.PaginationReq
 }
 type Order struct {
 	Id           string           `db:"id" json:"id"`

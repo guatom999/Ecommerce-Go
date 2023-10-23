@@ -5,11 +5,13 @@ import (
 	"fmt"
 
 	"github.com/guatom999/Ecommerce-Go/modules/orders"
+	"github.com/guatom999/Ecommerce-Go/modules/orders/ordersPatterns"
 	"github.com/jmoiron/sqlx"
 )
 
 type IOrderRepository interface {
 	FindOneProduct(orderId string) (*orders.Order, error)
+	FindOrder(req *orders.OrderFilter) ([]*orders.Order, int)
 }
 
 type orderRepository struct {
@@ -75,4 +77,12 @@ func (r *orderRepository) FindOneProduct(orderId string) (*orders.Order, error) 
 	}
 
 	return orderData, nil
+}
+
+func (r *orderRepository) FindOrder(req *orders.OrderFilter) ([]*orders.Order, int) {
+
+	builder := ordersPatterns.FindOrderBuilder(r.db, req)
+	engineer := ordersPatterns.FundOrderEngineer(builder)
+
+	return engineer.FindOrder(), engineer.CountOrder()
 }

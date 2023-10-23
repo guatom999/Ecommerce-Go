@@ -1,8 +1,12 @@
 package ordersPatterns
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/guatom999/Ecommerce-Go/modules/orders"
 	"github.com/jmoiron/sqlx"
@@ -56,9 +60,11 @@ func (b *findOrderBuilder) initQuery() {
 	SELECT 
 		array_to_json(array_agg("at"))
 	FROM (
-			"o"."id",
-			"o"."user_id",
-			"o"."transfer_slip",
+			SELECT
+				"o"."id",
+				"o"."user_id",
+				"o"."transfer_slip",
+				"o"."status",
 			(
 				SELECT 
 					array_to_json(array_agg("pt"))
@@ -69,12 +75,10 @@ func (b *findOrderBuilder) initQuery() {
 						"spo"."product"
 					FROM "products_orders" "spo"
 					WHERE "spo"."order_id" = "o"."id"
-
 				) AS "pt"
 			) AS "products",
 			"o"."address",
 			"o"."contact",
-			"o"."status",
 			(
 				SELECT 
 					SUM(COALESCE(("po"."product"->>'price')::FLOAT*("po"."qty")::FLOAT,0))
@@ -186,12 +190,16 @@ func (b *findOrderBuilder) builSort() {
 
 func (b *findOrderBuilder) buildPaginate() {
 
-	b.values = append(b.values, b.req.OrderBy)
+	b.values = append(b.values,
+		(b.req.Page-1)*b.req.Limit, b.req.Limit,
+	)
 
-	b.query += fmt.Sprintf(`
-	ORDER BY $%d %s`,
+	b.query = fmt.Sprintf(`
+	OFFSET $%d LIMIT $%d
+	`,
 		b.lastIndex+1,
-		b.req.Sort)
+		b.lastIndex+2,
+	)
 
 	b.lastIndex = len(b.values)
 
@@ -224,9 +232,52 @@ func (b *findOrderBuilder) reset() {
 }
 
 func (en *findOrderEngineer) FindOrder() []*orders.Order {
-	return nil
+
+	_, cancel := context.WithTimeout(context.Background(), time.Second*60)
+	defer cancel()
+
+	en.builder.initQuery()
+	en.builder.buildWhereSearch()
+	en.builder.buildWhereStatus()
+	en.builder.buildWhereDate()
+	en.builder.builSort()
+	en.builder.buildPaginate()
+	en.builder.closeQuery()
+
+	raw := make([]byte, 0)
+	if err := en.builder.getDb().Get(&raw, en.builder.getQuery(), en.builder.getValues()...); err != nil {
+		log.Printf("get orders failed: %v\n", err)
+		return make([]*orders.Order, 0)
+	}
+
+	ordersData := make([]*orders.Order, 0)
+	if err := json.Unmarshal(raw, &ordersData); err != nil {
+		log.Printf("unmarshal failed: %v\n", err)
+		return make([]*orders.Order, 0)
+	}
+
+	en.builder.reset()
+
+	return ordersData
 }
 
 func (en *findOrderEngineer) CountOrder() int {
-	return 0
+
+	_, cancel := context.WithTimeout(context.Background(), time.Second*60)
+	defer cancel()
+
+	en.builder.initCountQuery()
+	en.builder.buildWhereSearch()
+	en.builder.buildWhereStatus()
+	en.builder.buildWhereDate()
+
+	var count int
+	if err := en.builder.getDb().Get(&count, en.builder.getQuery(), en.builder.getValues()...); err != nil {
+		log.Printf("get orders failed: %v\n", err)
+		return 0
+	}
+
+	en.builder.reset()
+
+	return count
 }
