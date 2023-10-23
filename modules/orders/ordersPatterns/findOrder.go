@@ -92,13 +92,11 @@ func (b *findOrderBuilder) initQuery() {
 }
 
 func (b *findOrderBuilder) initCountQuery() {
-
 	b.query += `
-	SELECT
-		COUNT(*) AS "count"
-	FROM "orders "o"
-	WHERE 1 = 1`
-
+		SELECT
+			COUNT(*) AS "count"
+		FROM "orders" "o"
+		WHERE 1 = 1`
 }
 
 func (b *findOrderBuilder) buildWhereSearch() {
@@ -135,11 +133,11 @@ func (b *findOrderBuilder) buildWhereStatus() {
 	if b.req.Status != "" {
 		b.values = append(
 			b.values,
-			strings.ToLower(b.req.Search),
+			strings.ToLower(b.req.Status),
 		)
 
 		query := fmt.Sprintf(`
-		AND "o"."status" = $%d `,
+		AND "o"."status" = $%d`,
 			b.lastIndex+1,
 		)
 
@@ -160,13 +158,8 @@ func (b *findOrderBuilder) buildWhereDate() {
 			b.req.EndDate,
 		)
 
-		// query := fmt.Sprintf(`
-		// AND "o"."created_date" BETWEEN ($%d)::DATE AND ($%d)::DATE + 1`,
-		// 	b.lastIndex+1,
-		// 	b.lastIndex+2,
-		// )
 		query := fmt.Sprintf(`
-		AND "o"."created_at" BETWEEN DATE($%d) AND ($%d)::DATE + 1`,
+		AND "o"."created_at" BETWEEN ($%d)::DATE AND ($%d)::DATE + 1`,
 			b.lastIndex+1,
 			b.lastIndex+2,
 		)
@@ -201,7 +194,7 @@ func (b *findOrderBuilder) buildPaginate() {
 		b.req.Limit,
 	)
 
-	b.query = fmt.Sprintf(`
+	b.query += fmt.Sprintf(`
 		OFFSET $%d LIMIT $%d`, b.lastIndex+1, b.lastIndex+2)
 
 	b.lastIndex = len(b.values)
@@ -236,7 +229,7 @@ func (b *findOrderBuilder) reset() {
 
 func (en *findOrderEngineer) FindOrder() []*orders.Order {
 
-	fmt.Println(en.builder.getQuery())
+	// fmt.Println(en.builder.getQuery())
 
 	_, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()

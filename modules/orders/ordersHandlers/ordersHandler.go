@@ -56,12 +56,10 @@ func (h *orderHandler) FindOneOrder(c *fiber.Ctx) error {
 }
 
 func (h *orderHandler) FindOrder(c *fiber.Ctx) error {
-
 	req := &orders.OrderFilter{
 		SortReq:       &entities.SortReq{},
 		PaginationReq: &entities.PaginationReq{},
 	}
-
 	if err := c.QueryParser(req); err != nil {
 		return entities.NewResponse(c).Error(
 			fiber.ErrBadRequest.Code,
@@ -70,48 +68,46 @@ func (h *orderHandler) FindOrder(c *fiber.Ctx) error {
 		).Res()
 	}
 
-	if req.PaginationReq.Page < 1 {
+	// Paginate
+	if req.Page < 1 {
 		req.Page = 1
 	}
 	if req.Limit < 5 {
 		req.Limit = 5
 	}
 
+	// Sort
 	orderByMap := map[string]string{
 		"id":         `"o"."id"`,
 		"created_at": `"o"."created_at"`,
 	}
-
 	if orderByMap[req.OrderBy] == "" {
 		req.OrderBy = orderByMap["id"]
 	}
 
 	req.Sort = strings.ToUpper(req.Sort)
-
 	sortMap := map[string]string{
 		"DESC": "DESC",
 		"ASC":  "ASC",
 	}
-
-	if orderByMap[req.OrderBy] == "" {
+	if sortMap[req.Sort] == "" {
 		req.Sort = sortMap["DESC"]
 	}
 
+	// Date	YYYY-MM-DD
 	if req.StartDate != "" {
-		timeStart, err := time.Parse("2006-01-02", req.StartDate)
+		start, err := time.Parse("2006-01-02", req.StartDate)
 		if err != nil {
 			return entities.NewResponse(c).Error(
 				fiber.ErrBadRequest.Code,
 				string(findOrderErr),
-				req.StartDate,
+				"start date is invalid",
 			).Res()
 		}
-
-		req.StartDate = timeStart.Format("2006-01-02")
+		req.StartDate = start.Format("2006-01-02")
 	}
-
 	if req.EndDate != "" {
-		timeEnd, err := time.Parse("2006-01-02", req.EndDate)
+		end, err := time.Parse("2006-01-02", req.EndDate)
 		if err != nil {
 			return entities.NewResponse(c).Error(
 				fiber.ErrBadRequest.Code,
@@ -119,15 +115,11 @@ func (h *orderHandler) FindOrder(c *fiber.Ctx) error {
 				"end date is invalid",
 			).Res()
 		}
-
-		req.EndDate = timeEnd.Format("2006-01-02")
-
+		req.EndDate = end.Format("2006-01-02")
 	}
-
-	orders := h.orderUseCase.FindOrder(req)
 
 	return entities.NewResponse(c).Success(
 		fiber.StatusOK,
-		orders,
+		h.orderUseCase.FindOrder(req),
 	).Res()
 }
