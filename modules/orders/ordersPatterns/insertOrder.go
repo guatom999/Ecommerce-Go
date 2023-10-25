@@ -44,23 +44,24 @@ func (b *insertOrderBuilder) initTransaction() error {
 }
 
 func (b *insertOrderBuilder) insertOrder() error {
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
 	query := `
-	INSERT INTO "orders" ( 
+	INSERT INTO "orders" (
 		"user_id",
 		"contact",
 		"address",
-		"tranfer_slip",
+		"transfer_slip",
 		"status"
-		)
+	)
 	VALUES
-		( $1 ,$2 ,$3 ,$4 ,$5 ) RETURNING "id";`
+	($1, $2, $3, $4, $5)
+		RETURNING "id";`
 
 	if err := b.tx.QueryRowxContext(
-		ctx, query,
+		ctx,
+		query,
 		b.req.UserId,
 		b.req.Contact,
 		b.req.Address,
@@ -68,11 +69,11 @@ func (b *insertOrderBuilder) insertOrder() error {
 		b.req.Status,
 	).Scan(&b.req.Id); err != nil {
 		b.tx.Rollback()
-		return fmt.Errorf("insert order failed:%v", err)
+		return fmt.Errorf("insert order failed: %v", err)
 	}
-
 	return nil
 }
+
 func (b *insertOrderBuilder) insertProductsOrders() error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
