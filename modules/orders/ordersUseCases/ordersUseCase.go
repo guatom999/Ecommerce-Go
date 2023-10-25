@@ -58,7 +58,7 @@ func (u *orderUseCase) InsertOrder(req *orders.Order) (*orders.Order, error) {
 			return nil, fmt.Errorf("product is nil")
 		}
 
-		product, err := u.productRepo.FindOneProduct(req.Product[i].Id)
+		product, err := u.productRepo.FindOneProduct(req.Product[i].Product.Id)
 
 		if err != nil {
 			return nil, err

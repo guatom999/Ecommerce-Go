@@ -93,7 +93,7 @@ func (b *insertOrderBuilder) insertProductsOrders() error {
 			values,
 			b.req.Id,
 			b.req.Product[i].Quantity,
-			b.req.Product[i],
+			b.req.Product[i].Product,
 		)
 
 		if len(b.req.Product)-1 != i {
