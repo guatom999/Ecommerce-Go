@@ -1,6 +1,7 @@
 package ordersUseCases
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/guatom999/Ecommerce-Go/modules/entities"
@@ -12,6 +13,7 @@ import (
 type IOrderUseCase interface {
 	FindOneOrder(orderId string) (*orders.Order, error)
 	FindOrder(req *orders.OrderFilter) *entities.PaginateRes
+	InsertOrder(req *orders.Order) (*orders.Order, error)
 }
 
 type orderUseCase struct {
@@ -47,4 +49,37 @@ func (u *orderUseCase) FindOrder(req *orders.OrderFilter) *entities.PaginateRes 
 		TotalItem: count,
 		TotalPage: int(math.Ceil(float64(count) / float64(req.Limit))),
 	}
+}
+
+func (u *orderUseCase) InsertOrder(req *orders.Order) (*orders.Order, error) {
+
+	for i := range req.Product {
+		if req.Product[i].Product == nil {
+			return nil, fmt.Errorf("product is nil")
+		}
+
+		product, err := u.productRepo.FindOneProduct(req.Product[i].Id)
+
+		if err != nil {
+			return nil, err
+		}
+
+		req.TotalPaid += req.Product[i].Product.Price * float64(req.Product[i].Quantity)
+		req.Product[i].Product = product
+
+	}
+
+	orderId, err := u.orderRepo.InsertOrder(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	order, err := u.orderRepo.FindOneProduct(orderId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return order, nil
 }

@@ -46,13 +46,21 @@ func FindOrderBuilder(db *sqlx.DB, req *orders.OrderFilter) IFindOrderBuilder {
 	}
 }
 
+type IFindOrderEngineer interface {
+	FindOrder() []*orders.Order
+	CountOrder() int
+}
 type findOrderEngineer struct {
 	builder IFindOrderBuilder
 }
 
-func FindOrderEngineer(builder IFindOrderBuilder) *findOrderEngineer {
+func FindOrderEngineer(builder IFindOrderBuilder) IFindOrderEngineer {
 	return &findOrderEngineer{builder: builder}
 }
+
+// func FindOrderEngineer(builder IFindOrderBuilder) IFindOrderEngineer {
+// 	return &findOrderEngineer{builder: builder}
+// }
 
 func (b *findOrderBuilder) initQuery() {
 
@@ -150,7 +158,7 @@ func (b *findOrderBuilder) buildWhereStatus() {
 }
 
 func (b *findOrderBuilder) buildWhereDate() {
-
+	//Some bug there
 	if b.req.StartDate != "" && b.req.EndDate != "" {
 		b.values = append(
 			b.values,
