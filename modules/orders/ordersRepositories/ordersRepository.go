@@ -63,8 +63,8 @@ func (r *orderRepository) FindOneProduct(orderId string) (*orders.Order, error) 
 	) AS "t";`
 
 	orderData := &orders.Order{
-		TransferSlip: &orders.TransferSlip{},
-		Product:      make([]*orders.ProductsOrder, 0),
+		// TransferSlip: &orders.TransferSlip{},
+		Product: make([]*orders.ProductsOrder, 0),
 	}
 
 	rawData := make([]byte, 0)
