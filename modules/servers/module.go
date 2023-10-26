@@ -143,4 +143,6 @@ func (m *moduleFactory) OrderModule() {
 
 	router.Post("/", m.mid.JwtAuth(), ordersHandler.InsertOrder)
 
+	router.Patch("/:user_id/:order_id", m.mid.JwtAuth(), ordersHandler.UpdateOrder)
+
 }

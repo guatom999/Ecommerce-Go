@@ -14,6 +14,7 @@ type IOrderUseCase interface {
 	FindOneOrder(orderId string) (*orders.Order, error)
 	FindOrder(req *orders.OrderFilter) *entities.PaginateRes
 	InsertOrder(req *orders.Order) (*orders.Order, error)
+	UpdateOrder(req *orders.Order) (*orders.Order, error)
 }
 
 type orderUseCase struct {
@@ -30,7 +31,7 @@ func OrderUseCase(orderRepo ordersRepositories.IOrderRepository, productRepo pro
 
 func (u *orderUseCase) FindOneOrder(orderId string) (*orders.Order, error) {
 
-	order, err := u.orderRepo.FindOneProduct(orderId)
+	order, err := u.orderRepo.FindOneOrder(orderId)
 	if err != nil {
 		return nil, err
 	}
@@ -75,11 +76,27 @@ func (u *orderUseCase) InsertOrder(req *orders.Order) (*orders.Order, error) {
 		return nil, err
 	}
 
-	order, err := u.orderRepo.FindOneProduct(orderId)
+	order, err := u.orderRepo.FindOneOrder(orderId)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return order, nil
+}
+
+func (u *orderUseCase) UpdateOrder(req *orders.Order) (*orders.Order, error) {
+
+	if err := u.orderRepo.UpdateOrder(req); err != nil {
+		return nil, err
+	}
+
+	order, err := u.orderRepo.FindOneOrder(req.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return order, nil
+
 }
