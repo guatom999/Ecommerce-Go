@@ -25,8 +25,6 @@ func main() {
 
 	defer db.Close()
 
-	// fmt.Println(db)
-
 	servers.NewServer(cfg, db).Start()
 
 }

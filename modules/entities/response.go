@@ -50,7 +50,7 @@ func (r *Response) Error(code int, tractId, msg string) IResponse {
 	}
 	r.IsError = true
 
-	logger.InitLogger(r.Context, &r.ErrorRes).Print().Save()
+	logger.InitLogger(r.Context, &r.ErrorRes).Print()
 
 	return r
 }

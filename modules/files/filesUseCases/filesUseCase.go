@@ -63,15 +63,12 @@ func (u *filesUseCase) uploadWorkers(ctx context.Context, client *storage.Client
 
 		buff := bytes.NewBuffer(b)
 
-		// Upload an object with storage.Writer.
 		wc := client.Bucket(u.cfg.App().Gcpbucket()).Object(job.Destination).NewWriter(ctx)
-		// wc.ChunkSize = 0 // note retries are not supported for chunk size 0.
 
 		if _, err = io.Copy(wc, buff); err != nil {
 			errsCh <- fmt.Errorf("io.Copy: %w", err)
 			return
 		}
-		// Data can continue to be added to the file until the writer is closed.
 		if err := wc.Close(); err != nil {
 			errsCh <- fmt.Errorf("Writer.Close: %w", err)
 			return

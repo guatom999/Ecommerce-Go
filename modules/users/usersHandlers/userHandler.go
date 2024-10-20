@@ -113,8 +113,6 @@ func (h *usersHandler) SignUpAdmin(c *fiber.Ctx) error {
 	}
 
 	return entities.NewResponse(c).Success(fiber.StatusCreated, result).Res()
-
-	return nil
 }
 
 func (h *usersHandler) SignIn(c *fiber.Ctx) error {
