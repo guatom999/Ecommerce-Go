@@ -35,6 +35,33 @@ vendor
 *.env*
 .air*
 /tmp
+tmp/
 *.pem
+*.key
+*.cert
+*.crt
 apikey.txt
 *.txt
+.qodo
+
+# PostgreSQL data directory
+/data/
+
+# Go build output
+/bin/
+/build/
+/dist/
+
+# Go test coverage
+coverage.html
+coverage.out
+
+# OS specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor swap files
+*.swp
+*.swo
+*~
