@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -8,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/guatom999/Ecommerce-Go/pkg/utils"
 )
 
 type ILogger interface {
@@ -48,14 +48,14 @@ func InitLogger(c *fiber.Ctx, res any) ILogger {
 
 func (l *logger) Print() ILogger {
 
-	utils.Debug(l)
+	log.Printf("[%d] %s %s\n", l.StatusCode, l.Method, l.Path)
 
 	return l
 }
 
 func (l *logger) Save() {
 
-	data := utils.Output(l)
+	data, _ := json.Marshal(l)
 
 	fileName := fmt.Sprintf("./assets/logs/logger_%v.txt", strings.ReplaceAll(time.Now().Format("2006-01-02"), "-", ""))
 	// _ = fileName
@@ -86,8 +86,8 @@ func (l *logger) SetBody(c *fiber.Ctx) {
 	}
 
 	switch l.Path {
-	case "v1/users/signup":
-		l.Body = "Private Password"
+	case "/v1/users/signup", "/v1/users/signin", "/v1/users/signup-admin":
+		l.Body = "*****"
 	default:
 		l.Body = body
 	}
