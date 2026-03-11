@@ -135,7 +135,7 @@ func (b *findProductBuilder) whereQuery() {
 
 	// summary query
 	b.query += queryWhere
-	fmt.Printf("query is : %v", b.query)
+	// fmt.Printf("query is : %v", b.query)
 
 }
 
@@ -228,7 +228,7 @@ func (b *findProductBuilder) Count() int {
 func (b *findProductBuilder) PrintQuery() {
 
 	utils.Debug(b.values)
-	fmt.Printf("query is :%v", b.query)
+	// fmt.Printf("query is :%v", b.query)
 
 }
 

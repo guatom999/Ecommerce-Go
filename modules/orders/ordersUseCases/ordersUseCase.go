@@ -56,12 +56,14 @@ func (u *orderUseCase) InsertOrder(req *orders.Order) (*orders.Order, error) {
 
 	for i := range req.Product {
 		if req.Product[i].Product == nil {
+			fmt.Println("Product is Nill :::::::::::::::>")
 			return nil, fmt.Errorf("product is nil")
 		}
 
 		product, err := u.productRepo.FindOneProduct(req.Product[i].Product.Id)
 
 		if err != nil {
+			fmt.Println("Error: FindOneProduct Failed", err)
 			return nil, err
 		}
 
@@ -73,12 +75,14 @@ func (u *orderUseCase) InsertOrder(req *orders.Order) (*orders.Order, error) {
 	orderId, err := u.orderRepo.InsertOrder(req)
 
 	if err != nil {
+		fmt.Println("Error: InsertOrder Failed", err)
 		return nil, err
 	}
 
 	order, err := u.orderRepo.FindOneOrder(orderId)
 
 	if err != nil {
+		fmt.Println("Error: FindOneOrder Failed", err)
 		return nil, err
 	}
 
@@ -88,6 +92,7 @@ func (u *orderUseCase) InsertOrder(req *orders.Order) (*orders.Order, error) {
 func (u *orderUseCase) UpdateOrder(req *orders.Order) (*orders.Order, error) {
 
 	if err := u.orderRepo.UpdateOrder(req); err != nil {
+		fmt.Println("Error: UpdateOrder Failed", err)
 		return nil, err
 	}
 
