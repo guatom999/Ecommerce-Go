@@ -67,10 +67,10 @@ func (m *moduleFactory) UsersModule() {
 
 	router := m.router.Group("/users")
 
-	router.Post("/signup", m.mid.ApiKeyCheck(), handler.SignUpCustomer)
-	router.Post("/signin", m.mid.ApiKeyCheck(), handler.SignIn)
-	router.Post("/refresh", m.mid.ApiKeyCheck(), handler.RefeshPassport)
-	router.Post("/signout", m.mid.ApiKeyCheck(), handler.SignOut)
+	router.Post("/signup", handler.SignUpCustomer)
+	router.Post("/signin", handler.SignIn)
+	router.Post("/refresh", handler.RefeshPassport)
+	router.Post("/signout", handler.SignOut)
 	router.Post("/signup-admin", m.mid.JwtAuth(), m.mid.Authorize(2), handler.SignUpAdmin)
 
 	router.Get("/:user_id", m.mid.JwtAuth(), m.mid.ParamsCheck(), handler.GetUserProfile)
@@ -86,7 +86,7 @@ func (m *moduleFactory) AppInfoModule() {
 	router := m.router.Group("/appinfo")
 
 	router.Get("/apikey", m.mid.JwtAuth(), m.mid.Authorize(2), handler.GenerateApiKey)
-	router.Get("/categories", m.mid.ApiKeyCheck(), handler.FindCategory)
+	router.Get("/categories", handler.FindCategory)
 
 	router.Post("/categories", m.mid.JwtAuth(), m.mid.Authorize(2), handler.AddCategory)
 
@@ -102,8 +102,6 @@ func (m *moduleFactory) FileTransferModule() {
 
 	router.Post("/upload", m.mid.JwtAuth(), m.mid.Authorize(2), handler.UploadFiles)
 	router.Patch("/delete", m.mid.JwtAuth(), m.mid.Authorize(2), handler.DeleteFile)
-	// _ = router
-	// _ = handler
 }
 
 func (m *moduleFactory) ProductsModule() {
@@ -120,8 +118,8 @@ func (m *moduleFactory) ProductsModule() {
 
 	router.Patch("/:product_id", m.mid.JwtAuth(), m.mid.Authorize(2), productsHandler.UpdateProduct)
 
-	router.Get("/", m.mid.ApiKeyCheck(), productsHandler.FindProduct)
-	router.Get("/:product_id", m.mid.ApiKeyCheck(), productsHandler.FindOneProduct)
+	router.Get("/", productsHandler.FindProduct)
+	router.Get("/:product_id", productsHandler.FindOneProduct)
 
 	// router.Delete("/:product_id", m.mid.ApiKeyCheck(), productsHandler.DeleteProduct)
 
@@ -139,9 +137,10 @@ func (m *moduleFactory) OrderModule() {
 	router := m.router.Group("/orders")
 
 	router.Get("/:user_id/:order_id", m.mid.JwtAuth(), ordersHandler.FindOneOrder)
-	router.Get("/", m.mid.JwtAuth(), m.mid.ParamsCheck(), ordersHandler.FindOrder)
+	router.Get("/", m.mid.JwtAuth(), ordersHandler.FindOrder)
 
 	router.Post("/", m.mid.JwtAuth(), ordersHandler.InsertOrder)
+	// router.Post("/", ordersHandler.InsertOrder)
 
 	router.Patch("/:user_id/:order_id", m.mid.JwtAuth(), m.mid.ParamsCheck(), ordersHandler.UpdateOrder)
 
