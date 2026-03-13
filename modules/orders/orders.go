@@ -6,6 +6,7 @@ import (
 )
 
 type OrderFilter struct {
+	UserId    string `query:"user_id"`
 	Search    string `query:"search"`
 	Status    string `query:"status"`
 	StartDate string `query:"start_date"`

@@ -56,7 +56,6 @@ func (u *orderUseCase) InsertOrder(req *orders.Order) (*orders.Order, error) {
 
 	for i := range req.Product {
 		if req.Product[i].Product == nil {
-			fmt.Println("Product is Nill :::::::::::::::>")
 			return nil, fmt.Errorf("product is nil")
 		}
 
