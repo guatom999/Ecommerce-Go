@@ -15,6 +15,7 @@ import (
 type IFindOrderBuilder interface {
 	initQuery()
 	initCountQuery()
+	buildWhereUserId()
 	buildWhereSearch()
 	buildWhereStatus()
 	buildWhereDate()
@@ -57,10 +58,6 @@ type findOrderEngineer struct {
 func FindOrderEngineer(builder IFindOrderBuilder) IFindOrderEngineer {
 	return &findOrderEngineer{builder: builder}
 }
-
-// func FindOrderEngineer(builder IFindOrderBuilder) IFindOrderEngineer {
-// 	return &findOrderEngineer{builder: builder}
-// }
 
 func (b *findOrderBuilder) initQuery() {
 
@@ -105,6 +102,22 @@ func (b *findOrderBuilder) initCountQuery() {
 			COUNT(*) AS "count"
 		FROM "orders" "o"
 		WHERE 1 = 1`
+}
+
+func (b *findOrderBuilder) buildWhereUserId() {
+	if b.req.UserId != "" {
+		b.values = append(b.values, b.req.UserId)
+
+		query := fmt.Sprintf(`
+		AND "o"."user_id" = $%d`, b.lastIndex+1)
+
+		temp := b.getQuery()
+		temp += query
+		b.setQuery(temp)
+
+		b.lastIndex = len(b.values)
+	}
+
 }
 
 func (b *findOrderBuilder) buildWhereSearch() {
@@ -243,6 +256,7 @@ func (en *findOrderEngineer) FindOrder() []*orders.Order {
 	defer cancel()
 
 	en.builder.initQuery()
+	en.builder.buildWhereUserId()
 	en.builder.buildWhereSearch()
 	en.builder.buildWhereStatus()
 	en.builder.buildWhereDate()
@@ -271,6 +285,7 @@ func (en *findOrderEngineer) CountOrder() int {
 	defer cancel()
 
 	en.builder.initCountQuery()
+	en.builder.buildWhereUserId()
 	en.builder.buildWhereSearch()
 	en.builder.buildWhereStatus()
 	en.builder.buildWhereDate()
