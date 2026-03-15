@@ -252,7 +252,7 @@ func (en *findOrderEngineer) FindOrder() []*orders.Order {
 
 	// fmt.Println(en.builder.getQuery())
 
-	_, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 
 	en.builder.initQuery()
@@ -265,7 +265,7 @@ func (en *findOrderEngineer) FindOrder() []*orders.Order {
 	en.builder.closeQuery()
 
 	raw := make([]byte, 0)
-	if err := en.builder.getDb().Get(&raw, en.builder.getQuery(), en.builder.getValues()...); err != nil {
+	if err := en.builder.getDb().GetContext(ctx, &raw, en.builder.getQuery(), en.builder.getValues()...); err != nil {
 		log.Printf("get orders failed: %v\n", err)
 		return make([]*orders.Order, 0)
 	}
@@ -281,7 +281,7 @@ func (en *findOrderEngineer) FindOrder() []*orders.Order {
 
 func (en *findOrderEngineer) CountOrder() int {
 
-	_, cancel := context.WithTimeout(context.Background(), time.Second*60)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 	defer cancel()
 
 	en.builder.initCountQuery()
@@ -291,7 +291,7 @@ func (en *findOrderEngineer) CountOrder() int {
 	en.builder.buildWhereDate()
 
 	var count int
-	if err := en.builder.getDb().Get(&count, en.builder.getQuery(), en.builder.getValues()...); err != nil {
+	if err := en.builder.getDb().GetContext(ctx, &count, en.builder.getQuery(), en.builder.getValues()...); err != nil {
 		log.Printf("get orders failed: %v\n", err)
 		return 0
 	}

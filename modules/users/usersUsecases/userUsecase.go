@@ -75,17 +75,14 @@ func (u *userUsecase) GetPassport(req *users.UserCredential) (*users.UserPasspor
 		RoleId: user.RoleId,
 	})
 
+	if err != nil {
+		return nil, err
+	}
+
 	refreshToken, err := authen.NewAuth(authen.Refresh, u.cfg.Jwt(), &users.UserClaims{
 		Id:     user.Id,
 		RoleId: user.RoleId,
 	})
-
-	// passport := users.UserPassport{
-	// 	User: &users.User{
-
-	// 	},
-
-	// }
 
 	passport := &users.UserPassport{
 		User: &users.User{

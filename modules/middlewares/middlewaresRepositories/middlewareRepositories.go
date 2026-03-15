@@ -1,7 +1,9 @@
 package middlewaresRepositories
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/guatom999/Ecommerce-Go/modules/middlewares"
 	"github.com/jmoiron/sqlx"
@@ -22,6 +24,9 @@ func MiddlewareRepository(db *sqlx.DB) IMiddlewareRepository {
 
 func (m *middlewareRepository) FindAccessToken(userId string, accessToken string) bool {
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	query := `
 	SELECT 
 		(CASE WHEN COUNT(*) = 1 THEN TRUE ELSE FALSE END) 
@@ -31,7 +36,7 @@ func (m *middlewareRepository) FindAccessToken(userId string, accessToken string
 	`
 
 	var check bool
-	if err := m.db.Get(&check, query, userId, accessToken); err != nil {
+	if err := m.db.GetContext(ctx, &check, query, userId, accessToken); err != nil {
 		return false
 	}
 
@@ -39,10 +44,13 @@ func (m *middlewareRepository) FindAccessToken(userId string, accessToken string
 }
 
 func (m *middlewareRepository) FindRole() ([]*middlewares.Role, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	query := `SELECT "id" , "title" FROM "roles" ORDER BY "id" DESC `
 
 	roles := make([]*middlewares.Role, 0)
-	if err := m.db.Select(&roles, query); err != nil {
+	if err := m.db.SelectContext(ctx, &roles, query); err != nil {
 		return nil, fmt.Errorf("roles are empthy")
 	}
 

@@ -1,10 +1,13 @@
 package servers
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/guatom999/Ecommerce-Go/config"
@@ -58,11 +61,13 @@ func (s *server) Start() {
 
 	//Graceful shutdown
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		_ = <-c
 		log.Println("server is shutting down....")
-		_ = s.app.Shutdown()
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		_ = s.app.ShutdownWithContext(ctx)
 	}()
 
 	// Listen to host:port
