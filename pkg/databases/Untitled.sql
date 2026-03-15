@@ -1,4 +1,5 @@
-CREATE TABLE "users" (
+CREATE TABLE "users"
+(
   "id" varchar PRIMARY KEY,
   "username" varchar UNIQUE,
   "password" varchar,
@@ -9,7 +10,8 @@ CREATE TABLE "users" (
   "delete_at" timestamp
 );
 
-CREATE TABLE "oauth" (
+CREATE TABLE "oauth"
+(
   "id" varchar PRIMARY KEY,
   "user_id" varchar,
   "access_token" varchar,
@@ -18,12 +20,14 @@ CREATE TABLE "oauth" (
   "updated_at" timestamp
 );
 
-CREATE TABLE "roles" (
+CREATE TABLE "roles"
+(
   "id" int PRIMARY KEY,
   "title" varchar
 );
 
-CREATE TABLE "products" (
+CREATE TABLE "products"
+(
   "id" varchar PRIMARY KEY,
   "title" varchar,
   "description" varchar,
@@ -32,18 +36,21 @@ CREATE TABLE "products" (
   "updated_at" timestamp
 );
 
-CREATE TABLE "products_categories" (
+CREATE TABLE "products_categories"
+(
   "id" varchar PRIMARY KEY,
   "product_id" varchar,
   "categorie_id" int
 );
 
-CREATE TABLE "categories" (
+CREATE TABLE "categories"
+(
   "id" int PRIMARY KEY,
   "title" varchar UNIQUE
 );
 
-CREATE TABLE "images" (
+CREATE TABLE "images"
+(
   "id" varchar PRIMARY KEY,
   "filename" varchar,
   "url" varcher,
@@ -52,7 +59,8 @@ CREATE TABLE "images" (
   "updated_at" timestamp
 );
 
-CREATE TABLE "orders" (
+CREATE TABLE "orders"
+(
   "id" varchar PRIMARY KEY,
   "user_id" varchar,
   "contact" varchar,
@@ -63,7 +71,8 @@ CREATE TABLE "orders" (
   "updated_at" timestamp
 );
 
-CREATE TABLE "products_order" (
+CREATE TABLE "products_order"
+(
   "id" varchar PRIMARY KEY,
   "qty" int,
   "product" jsonb,

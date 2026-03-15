@@ -1,0 +1,472 @@
+{
+  "info": {
+    "name": "Ecommerce-Go",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:5001/v1" },
+    { "key": "access_token", "value": "" },
+    { "key": "api_key", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Monitor",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Api-Key", "value": "{{api_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@test.com\",\n  \"password\": \"Test123456\",\n  \"username\": \"testuser\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/signup",
+              "host": ["{{base_url}}"],
+              "path": ["users", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Sign In",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "  pm.collectionVariables.set('access_token', json.token.access_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Api-Key", "value": "{{api_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@test.com\",\n  \"password\": \"Test123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/signin",
+              "host": ["{{base_url}}"],
+              "path": ["users", "signin"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Api-Key", "value": "{{api_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["users", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Sign Out",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Api-Key", "value": "{{api_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oauth_id\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/signout",
+              "host": ["{{base_url}}"],
+              "path": ["users", "signout"]
+            }
+          }
+        },
+        {
+          "name": "Sign Up Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test.com\",\n  \"password\": \"Admin123456\",\n  \"username\": \"adminuser\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/signup-admin",
+              "host": ["{{base_url}}"],
+              "path": ["users", "signup-admin"]
+            }
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/:user_id",
+              "host": ["{{base_url}}"],
+              "path": ["users", ":user_id"],
+              "variable": [{ "key": "user_id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Generate Admin Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json) pm.collectionVariables.set('access_token', json);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/admin/secret",
+              "host": ["{{base_url}}"],
+              "path": ["users", "admin", "secret"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "AppInfo",
+      "item": [
+        {
+          "name": "Generate API Key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.key) pm.collectionVariables.set('api_key', json.key);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/appinfo/apikey",
+              "host": ["{{base_url}}"],
+              "path": ["appinfo", "apikey"]
+            }
+          }
+        },
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Api-Key", "value": "{{api_key}}" }],
+            "url": {
+              "raw": "{{base_url}}/appinfo/categories?title=",
+              "host": ["{{base_url}}"],
+              "path": ["appinfo", "categories"],
+              "query": [{ "key": "title", "value": "", "disabled": true }]
+            }
+          }
+        },
+        {
+          "name": "Add Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"new category\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/appinfo/categories",
+              "host": ["{{base_url}}"],
+              "path": ["appinfo", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/appinfo/:category_id/categories",
+              "host": ["{{base_url}}"],
+              "path": ["appinfo", ":category_id", "categories"],
+              "variable": [{ "key": "category_id", "value": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Files",
+      "item": [
+        {
+          "name": "Upload Files",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "files", "type": "file", "src": "" }]
+            },
+            "url": {
+              "raw": "{{base_url}}/files/upload",
+              "host": ["{{base_url}}"],
+              "path": ["files", "upload"]
+            }
+          }
+        },
+        {
+          "name": "Delete File",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"destination\": \"\",\n    \"filename\": \"\",\n    \"extension\": \"\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/files/delete",
+              "host": ["{{base_url}}"],
+              "path": ["files", "delete"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get Products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Api-Key", "value": "{{api_key}}" }],
+            "url": {
+              "raw": "{{base_url}}/products?page=1&limit=10&order_by=created_at&sort=desc",
+              "host": ["{{base_url}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "id", "value": "", "disabled": true },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "order_by", "value": "created_at" },
+                { "key": "sort", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Api-Key", "value": "{{api_key}}" }],
+            "url": {
+              "raw": "{{base_url}}/products/:product_id",
+              "host": ["{{base_url}}"],
+              "path": ["products", ":product_id"],
+              "variable": [{ "key": "product_id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Add Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Product Name\",\n  \"description\": \"Product description\",\n  \"price\": 100,\n  \"category\": { \"id\": 1 },\n  \"images\": [\n    { \"filename\": \"img.jpg\", \"url\": \"https://example.com/img.jpg\" }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products/",
+              "host": ["{{base_url}}"],
+              "path": ["products", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Name\",\n  \"price\": 200\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products/:product_id",
+              "host": ["{{base_url}}"],
+              "path": ["products", ":product_id"],
+              "variable": [{ "key": "product_id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/:product_id",
+              "host": ["{{base_url}}"],
+              "path": ["products", ":product_id"],
+              "variable": [{ "key": "product_id", "value": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Get Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders/",
+              "host": ["{{base_url}}"],
+              "path": ["orders", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders/:user_id/:order_id",
+              "host": ["{{base_url}}"],
+              "path": ["orders", ":user_id", ":order_id"],
+              "variable": [
+                { "key": "user_id", "value": "" },
+                { "key": "order_id", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"\",\n  \"products\": [\n    {\n      \"product_id\": \"\",\n      \"quantity\": 1\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders/",
+              "host": ["{{base_url}}"],
+              "path": ["orders", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Order",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"shipping\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders/:user_id/:order_id",
+              "host": ["{{base_url}}"],
+              "path": ["orders", ":user_id", ":order_id"],
+              "variable": [
+                { "key": "user_id", "value": "" },
+                { "key": "order_id", "value": "" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

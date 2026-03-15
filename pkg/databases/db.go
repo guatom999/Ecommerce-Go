@@ -2,6 +2,7 @@ package databases
 
 import (
 	"log"
+	"time"
 
 	"github.com/guatom999/Ecommerce-Go/config"
 
@@ -18,6 +19,9 @@ func DbConnect(cfg config.IDbConfig) *sqlx.DB {
 	}
 
 	db.DB.SetMaxOpenConns(cfg.MaxOpenConns())
+	db.DB.SetMaxIdleConns(cfg.MaxOpenConns() / 2)
+	db.DB.SetConnMaxLifetime(1 * time.Minute)
+	db.DB.SetConnMaxIdleTime(1 * time.Minute)
 
 	return db
 }

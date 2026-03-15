@@ -135,7 +135,7 @@ func (b *findProductBuilder) whereQuery() {
 
 	// summary query
 	b.query += queryWhere
-	fmt.Printf("query is : %v", b.query)
+	// fmt.Printf("query is : %v", b.query)
 
 }
 
@@ -190,13 +190,13 @@ func (b *findProductBuilder) resetQuery() {
 	b.lastStackIndex = 0
 }
 func (b *findProductBuilder) Result() []*products.Product {
-	_, cancel := context.WithTimeout(context.Background(), time.Second*15)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancel()
 
 	bytes := make([]byte, 0)
 	productsData := make([]*products.Product, 0)
 
-	if err := b.db.Get(&bytes, b.query, b.values...); err != nil {
+	if err := b.db.GetContext(ctx, &bytes, b.query, b.values...); err != nil {
 		log.Printf("find product fail:%v", err)
 		return make([]*products.Product, 0)
 	}
@@ -212,11 +212,11 @@ func (b *findProductBuilder) Result() []*products.Product {
 
 }
 func (b *findProductBuilder) Count() int {
-	_, cancel := context.WithTimeout(context.Background(), time.Second*15)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancel()
 
 	var count int
-	if err := b.db.Get(&count, b.query, b.values...); err != nil {
+	if err := b.db.GetContext(ctx, &count, b.query, b.values...); err != nil {
 		log.Printf("get count failed:%v", err)
 		return 0
 	}
@@ -228,7 +228,7 @@ func (b *findProductBuilder) Count() int {
 func (b *findProductBuilder) PrintQuery() {
 
 	utils.Debug(b.values)
-	fmt.Printf("query is :%v", b.query)
+	// fmt.Printf("query is :%v", b.query)
 
 }
 

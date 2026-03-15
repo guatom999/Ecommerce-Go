@@ -35,7 +35,11 @@ vendor
 *.env*
 .air*
 /tmp
+tmp/
 *.pem
+*.key
+*.cert
+*.crt
 apikey.txt
 *.txt
 

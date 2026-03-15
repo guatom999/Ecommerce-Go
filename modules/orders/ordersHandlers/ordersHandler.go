@@ -73,6 +73,8 @@ func (h *orderHandler) FindOrder(c *fiber.Ctx) error {
 		).Res()
 	}
 
+	req.UserId = c.Locals("userId").(string)
+
 	// Paginate
 	if req.Page < 1 {
 		req.Page = 1
@@ -81,15 +83,15 @@ func (h *orderHandler) FindOrder(c *fiber.Ctx) error {
 		req.Limit = 5
 	}
 
-	// Sort
 	orderByMap := map[string]string{
 		"id":         `"o"."id"`,
 		"created_at": `"o"."created_at"`,
 	}
-	if orderByMap[req.OrderBy] == "" {
-		req.OrderBy = orderByMap["id"]
+	orderBy, ok := orderByMap[req.OrderBy]
+	if !ok || orderBy == "" {
+		orderBy = orderByMap["id"]
 	}
-
+	req.OrderBy = orderBy
 	req.Sort = strings.ToUpper(req.Sort)
 	sortMap := map[string]string{
 		"DESC": "DESC",
