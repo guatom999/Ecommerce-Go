@@ -16,6 +16,14 @@ pipeline {
 
         stage('Test') {
             steps {
+                script{
+                    echo "test"
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
                 script {
                     // รัน test พร้อมเก็บ coverage และเก็บ output
                     def output = sh(
