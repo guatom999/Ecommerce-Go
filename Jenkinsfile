@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        go 'go-1.23'
+    }
+
     environment {
         IMAGE_NAME        = "ecommerce-go"
         IMAGE_TAG         = "latest"
