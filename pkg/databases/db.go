@@ -15,7 +15,7 @@ func DbConnect(cfg config.IDbConfig) *sqlx.DB {
 	db, err := sqlx.Connect("pgx", cfg.Url())
 
 	if err != nil {
-		log.Fatalf("connect to db failed cause of %s", err)
+		log.Printf("connect to db failed cause of %s", err)
 	}
 
 	db.DB.SetMaxOpenConns(cfg.MaxOpenConns())

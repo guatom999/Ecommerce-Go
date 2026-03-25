@@ -59,6 +59,12 @@ func (s *server) Start() {
 
 	s.app.Use(middlewares.RouterCheck())
 
+	v1.Get("/health", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"status": "ok",
+		})
+	})
+
 	//Graceful shutdown
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)

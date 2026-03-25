@@ -57,11 +57,16 @@ func (l *logger) Save() {
 
 	data, _ := json.Marshal(l)
 
+	if err := os.MkdirAll("./assets/logs", os.ModePerm); err != nil {
+		log.Printf("error creating log directory: %v", err)
+		return
+	}
+
 	fileName := fmt.Sprintf("./assets/logs/logger_%v.txt", strings.ReplaceAll(time.Now().Format("2006-01-02"), "-", ""))
 	// _ = fileName
 	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		log.Fatalf("error opening file : %v", err)
+		log.Printf("error opening file : %v", err)
 	}
 
 	defer file.Close()
@@ -70,27 +75,36 @@ func (l *logger) Save() {
 }
 
 func (l *logger) SetQuery(c *fiber.Ctx) {
-	var query any
-	if err := c.QueryParser(&query); err != nil {
-		log.Printf("query parser error : %v", err)
-	}
+	// var query any
+	// if err := c.QueryParser(&query); err != nil {
+	// 	log.Printf("query parser error : %v", err)
+	// }
 
-	l.Query = query
+	// l.Query = query
+	l.Query = c.Request().URI().QueryString()
 
 }
 
 func (l *logger) SetBody(c *fiber.Ctx) {
-	var body any
-	if err := c.BodyParser(&body); err != nil {
-		log.Printf("body parser error : %v", err)
-	}
+	// var body any
+	// if err := c.BodyParser(&body); err != nil {
+	// 	log.Printf("body parser error : %v", err)
+	// }
 
+	// switch l.Path {
+	// case "/v1/users/signup", "/v1/users/signin", "/v1/users/signup-admin":
+	// 	l.Body = "*****"
+	// default:
+	// 	l.Body = body
+	// }
 	switch l.Path {
 	case "/v1/users/signup", "/v1/users/signin", "/v1/users/signup-admin":
 		l.Body = "*****"
 	default:
-		l.Body = body
+		// เก็บ body ดิบ แทนการ BodyParser
+		l.Body = string(c.Body())
 	}
+
 }
 
 func (l *logger) SetResponse(res any) {
